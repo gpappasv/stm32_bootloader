@@ -1,0 +1,1 @@
+This folder contains all the relevant documents for each project.

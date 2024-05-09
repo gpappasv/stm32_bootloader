@@ -1,0 +1,1 @@
+This folder contains the relevant source files for a simple hello world application for the stm32 platform, to be flash alongside the bootloader.
