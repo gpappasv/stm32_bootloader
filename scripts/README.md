@@ -1,0 +1,1 @@
+This folder contains all the repository scripts that make our lives easier. Each script should be contained in its own folder and have its own README.md description.
