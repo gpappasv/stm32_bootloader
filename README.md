@@ -11,3 +11,5 @@ The structure of the repository is as follows:
 *projects*: folder under which all the projects exist. The source code and CMakeLists files can be found under it.
 
 *scripts*: folder under which all scripts should exist.
+
+*etc*: folder under which random stuff can be found. Just a place to store things.
