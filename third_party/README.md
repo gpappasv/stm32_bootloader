@@ -1,0 +1,1 @@
+In this folder, all third party code that is being used in *projects* resides (e.g. ST Drivers)

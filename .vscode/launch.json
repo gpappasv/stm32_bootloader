@@ -1,0 +1,18 @@
+// Configuration to debug STM32F401RE board ---- Project: app
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Cortex Debug",
+            "cwd": "${workspaceFolder}",
+            "executable": "${workspaceFolder}/build/app/app.elf",
+            "request": "launch",
+            "type": "cortex-debug",
+            "runToEntryPoint": "main",
+            "servertype": "stlink",
+            "device": "STM32F401RE",
+            "interface": "swd",
+            "svdFile": "${workspaceFolder}/projects/app/boards/stm32f401re/stm32f401.svd"
+        }
+    ]
+}

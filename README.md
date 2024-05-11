@@ -13,3 +13,5 @@ The structure of the repository is as follows:
 *scripts*: folder under which all scripts should exist.
 
 *etc*: folder under which random stuff can be found. Just a place to store things.
+
+*third_party*: folder under which third party applications reside (e.g. ST Drivers)
