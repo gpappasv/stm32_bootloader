@@ -27,7 +27,7 @@ message(STATUS "Git root directory: ${GIT_ROOT_DIR}")
 
 # Path to toolchain file. This one has to be before 'project()' below
 set(CMAKE_TOOLCHAIN_FILE ${GIT_ROOT_DIR}/projects/arm-none-eabi-gcc.cmake)
-set(LINKER_FILE ${GIT_ROOT_DIR}/projects/app/STM32F401RETx_FLASH.ld)
+set(LINKER_FILE ${GIT_ROOT_DIR}/projects/app/boards/stm32f401re/STM32F401RETx_FLASH.ld)
 project(app)
 # Setup project, output and linker file
 set(EXECUTABLE ${PROJECT_NAME}.elf)
@@ -55,22 +55,22 @@ file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/s19)
 
 # List of source files
 set(THIRD_PARTY_SRC_FILES
-    ${GIT_ROOT_DIR}/projects/app/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_tim.c
-    ${GIT_ROOT_DIR}/projects/app/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_tim_ex.c
-    ${GIT_ROOT_DIR}/projects/app/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_uart.c
-    ${GIT_ROOT_DIR}/projects/app/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_rcc.c
-    ${GIT_ROOT_DIR}/projects/app/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_rcc_ex.c
-    ${GIT_ROOT_DIR}/projects/app/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_flash.c
-    ${GIT_ROOT_DIR}/projects/app/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_flash_ex.c
-    ${GIT_ROOT_DIR}/projects/app/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_flash_ramfunc.c
-    ${GIT_ROOT_DIR}/projects/app/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_gpio.c
-    ${GIT_ROOT_DIR}/projects/app/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c
-    ${GIT_ROOT_DIR}/projects/app/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma.c
-    ${GIT_ROOT_DIR}/projects/app/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c
-    ${GIT_ROOT_DIR}/projects/app/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr_ex.c
-    ${GIT_ROOT_DIR}/projects/app/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_cortex.c
-    ${GIT_ROOT_DIR}/projects/app/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal.c
-    ${GIT_ROOT_DIR}/projects/app/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_exti.c
+    ${GIT_ROOT_DIR}/third_party/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_tim.c
+    ${GIT_ROOT_DIR}/third_party/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_tim_ex.c
+    ${GIT_ROOT_DIR}/third_party/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_uart.c
+    ${GIT_ROOT_DIR}/third_party/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_rcc.c
+    ${GIT_ROOT_DIR}/third_party/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_rcc_ex.c
+    ${GIT_ROOT_DIR}/third_party/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_flash.c
+    ${GIT_ROOT_DIR}/third_party/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_flash_ex.c
+    ${GIT_ROOT_DIR}/third_party/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_flash_ramfunc.c
+    ${GIT_ROOT_DIR}/third_party/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_gpio.c
+    ${GIT_ROOT_DIR}/third_party/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c
+    ${GIT_ROOT_DIR}/third_party/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma.c
+    ${GIT_ROOT_DIR}/third_party/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c
+    ${GIT_ROOT_DIR}/third_party/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr_ex.c
+    ${GIT_ROOT_DIR}/third_party/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_cortex.c
+    ${GIT_ROOT_DIR}/third_party/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal.c
+    ${GIT_ROOT_DIR}/third_party/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_exti.c
 )
 
 add_library(third_party ${THIRD_PARTY_SRC_FILES})
@@ -82,11 +82,11 @@ target_compile_definitions(third_party PUBLIC
         )
 
 target_include_directories(third_party PUBLIC
-    ${GIT_ROOT_DIR}/projects/app/Core/Inc
-    ${GIT_ROOT_DIR}/projects/app/Drivers/STM32F4xx_HAL_Driver/Inc
-    ${GIT_ROOT_DIR}/projects/app/Drivers/STM32F4xx_HAL_Driver/Inc/Legacy
-    ${GIT_ROOT_DIR}/projects/app/Drivers/CMSIS/Device/ST/STM32F4xx/Include
-    ${GIT_ROOT_DIR}/projects/app/Drivers/CMSIS/Include
+    ${GIT_ROOT_DIR}/projects/app/boards/stm32f401re/Inc
+    ${GIT_ROOT_DIR}/third_party/Drivers/STM32F4xx_HAL_Driver/Inc
+    ${GIT_ROOT_DIR}/third_party/Drivers/STM32F4xx_HAL_Driver/Inc/Legacy
+    ${GIT_ROOT_DIR}/third_party/Drivers/CMSIS/Device/ST/STM32F4xx/Include
+    ${GIT_ROOT_DIR}/third_party/Drivers/CMSIS/Include
 )
 
 target_compile_options(third_party PRIVATE -Wno-unused-parameter -mthumb
@@ -113,11 +113,11 @@ target_link_options(third_party PRIVATE
 
 
 set(SRC_FILES
-    ${GIT_ROOT_DIR}/projects/app/Core/Src/main.c
-    ${GIT_ROOT_DIR}/projects/app/Core/Src/stm32f4xx_it.c
-    ${GIT_ROOT_DIR}/projects/app/Core/Src/stm32f4xx_hal_msp.c
-    ${GIT_ROOT_DIR}/projects/app/Core/Src/system_stm32f4xx.c
-    ${GIT_ROOT_DIR}/projects/app/startup_stm32f401xe.s
+    ${GIT_ROOT_DIR}/projects/app/src/main.c
+    ${GIT_ROOT_DIR}/projects/app/boards/stm32f401re/Src/stm32f4xx_it.c
+    ${GIT_ROOT_DIR}/projects/app/boards/stm32f401re/Src/stm32f4xx_hal_msp.c
+    ${GIT_ROOT_DIR}/projects/app/boards/stm32f401re/Src/system_stm32f4xx.c
+    ${GIT_ROOT_DIR}/projects/app/boards/stm32f401re/startup_stm32f401xe.s
 )
 
 # Build the executable based on the source files
@@ -131,11 +131,12 @@ target_compile_definitions(${EXECUTABLE} PRIVATE
 
 # List of includ directories
 target_include_directories(${EXECUTABLE} PRIVATE
-        ${GIT_ROOT_DIR}/projects/app/Core/Inc
-        ${GIT_ROOT_DIR}/projects/app/Drivers/STM32F4xx_HAL_Driver/Inc
-        ${GIT_ROOT_DIR}/projects/app/Drivers/STM32F4xx_HAL_Driver/Inc/Legacy
-        ${GIT_ROOT_DIR}/projects/app/Drivers/CMSIS/Device/ST/STM32F4xx/Include
-        ${GIT_ROOT_DIR}/projects/app/Drivers/CMSIS/Include
+        ${GIT_ROOT_DIR}/projects/app/boards/stm32f401re/Inc
+        ${GIT_ROOT_DIR}/projects/app/src
+        ${GIT_ROOT_DIR}/third_party/Drivers/STM32F4xx_HAL_Driver/Inc
+        ${GIT_ROOT_DIR}/third_party/Drivers/STM32F4xx_HAL_Driver/Inc/Legacy
+        ${GIT_ROOT_DIR}/third_party/Drivers/CMSIS/Device/ST/STM32F4xx/Include
+        ${GIT_ROOT_DIR}/third_party/Drivers/CMSIS/Include
         )
 
 # Compiler options
@@ -174,4 +175,5 @@ add_custom_command(TARGET ${EXECUTABLE}
         COMMAND ${CMAKE_OBJCOPY} -O srec --srec-len=64 ${EXECUTABLE} ${CMAKE_BINARY_DIR}/s19/${PROJECT_NAME}.s19
         COMMAND ${CMAKE_OBJCOPY} -O ihex ${EXECUTABLE} ${CMAKE_BINARY_DIR}/hex/${PROJECT_NAME}.hex
         COMMAND ${CMAKE_OBJCOPY} -O binary ${EXECUTABLE} ${CMAKE_BINARY_DIR}/bin/${PROJECT_NAME}.bin
+        COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:${EXECUTABLE}> ${CMAKE_BINARY_DIR}/${PROJECT_NAME}.elf
         )
