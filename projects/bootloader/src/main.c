@@ -1,8 +1,12 @@
 /**
  * @file main.c
+ * @author George Pappas (pappasgeorge12@gmail.com)
  * @brief This source file is the main bootloader code.
  * @version 0.1
- * @date 2024-05-20
+ * @date 2024-05-22
+ * 
+ * @copyright Copyright (c) 2024
+ * 
  */
 
 // --- includes --------------------------------------------------------------------------------------------------------
