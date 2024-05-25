@@ -121,6 +121,7 @@ set(SRC_FILES
     # --- Actual application ---
     ${GIT_ROOT_DIR}/projects/bootloader/src/main.c
     ${GIT_ROOT_DIR}/projects/bootloader/src/drivers/sys/sys_init.c
+    ${GIT_ROOT_DIR}/projects/bootloader/src/drivers/sys/sys.c
     ${GIT_ROOT_DIR}/projects/bootloader/src/drivers/uart/uart_driver.c
     ${GIT_ROOT_DIR}/projects/bootloader/src/drivers/crc/crc_driver.c
     ${GIT_ROOT_DIR}/projects/bootloader/src/drivers/flash/flash_driver.c

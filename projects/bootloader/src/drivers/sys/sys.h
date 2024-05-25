@@ -10,7 +10,9 @@
  */
 
 // --- includes --------------------------------------------------------------------------------------------------------
-#include "stm32f4xx_hal.h"
+#include <stdint.h>
+#include <stddef.h>
 
 // --- function declarations -------------------------------------------------------------------------------------------
-void sys_init(void);
+void sys_delay_ms(uint32_t delay);
+void set_msp(size_t addr);

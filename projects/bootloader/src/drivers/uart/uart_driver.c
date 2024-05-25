@@ -1,22 +1,80 @@
 /**
  * @file uart_driver.c
  * @author George Pappas (pappasgeorge12@gmail.com)
- * @brief This source file is the low level uart driver layer. 
+ * @brief This source file is the low level uart driver layer.
  * @version 0.1
  * @date 2024-05-22
- * 
+ *
  * @copyright Copyright (c) 2024
- * 
+ *
  */
 
 // --- includes --------------------------------------------------------------------------------------------------------
+#include "uart_driver.h"
 
-// --- defines ---------------------------------------------------------------------------------------------------------
+#include <stdio.h>
+#include "stm32f4xx_hal.h"
+#include "sys_init.h"
 
-// --- static variable definitions -------------------------------------------------------------------------------------
+// --- variable definitions -------------------------------------------------------------------------------------
+UART_HandleTypeDef huart2;
 
 // --- static function declarations ------------------------------------------------------------------------------------
+static void MX_USART2_UART_Init(void);
 
 // --- static function definitions -------------------------------------------------------------------------------------
+/**
+ * @brief USART2 Initialization Function
+ * @param None
+ * @retval None
+ */
+static void
+MX_USART2_UART_Init(void) // Change from MX_USART1_UART_Init to MX_USART2_UART_Init
+{
+    // Init the relevant gpios
+    GPIO_InitTypeDef GPIO_InitStruct = { 0 };
 
+    /* GPIO Ports Clock Enable */
+    __HAL_RCC_GPIOA_CLK_ENABLE();
+
+    /*Configure GPIO pins : USART_TX_Pin USART_RX_Pin */
+    GPIO_InitStruct.Pin       = USART_TX_Pin | USART_RX_Pin;
+    GPIO_InitStruct.Mode      = GPIO_MODE_AF_PP;
+    GPIO_InitStruct.Pull      = GPIO_NOPULL;
+    GPIO_InitStruct.Speed     = GPIO_SPEED_FREQ_LOW;
+    GPIO_InitStruct.Alternate = GPIO_AF7_USART2;
+    HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+    // Init the uart peripheral
+    huart2.Instance          = USART2;
+    huart2.Init.BaudRate     = 115200;
+    huart2.Init.WordLength   = UART_WORDLENGTH_8B;
+    huart2.Init.StopBits     = UART_STOPBITS_1;
+    huart2.Init.Parity       = UART_PARITY_NONE;
+    huart2.Init.Mode         = UART_MODE_TX_RX;
+    huart2.Init.HwFlowCtl    = UART_HWCONTROL_NONE;
+    huart2.Init.OverSampling = UART_OVERSAMPLING_8;
+    if (HAL_UART_Init(&huart2) != HAL_OK)
+    {
+        printf("Error initializing uart\n");
+    }
+}
 // --- function definitions --------------------------------------------------------------------------------------------
+int
+_write(int file, char *ptr, int len)
+{
+    (void)file;
+    int DataIdx;
+
+    for (DataIdx = 0; DataIdx < len; DataIdx++)
+    {
+        HAL_UART_Transmit(&huart2, (uint8_t *)ptr++, 1, 100);
+    }
+    return len;
+}
+
+void
+uart_driver_init(void)
+{
+    MX_USART2_UART_Init();
+}
