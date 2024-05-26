@@ -71,6 +71,7 @@ set(THIRD_PARTY_SRC_FILES
     ${GIT_ROOT_DIR}/third_party/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_cortex.c
     ${GIT_ROOT_DIR}/third_party/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal.c
     ${GIT_ROOT_DIR}/third_party/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_exti.c
+    ${GIT_ROOT_DIR}/third_party/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_crc.c
 )
 
 add_library(third_party ${THIRD_PARTY_SRC_FILES})
@@ -113,11 +114,17 @@ target_link_options(third_party PRIVATE
 
 
 set(SRC_FILES
-    ${GIT_ROOT_DIR}/projects/bootloader/src/main.c
     ${GIT_ROOT_DIR}/projects/bootloader/boards/stm32f401re/Src/stm32f4xx_it.c
     ${GIT_ROOT_DIR}/projects/bootloader/boards/stm32f401re/Src/stm32f4xx_hal_msp.c
     ${GIT_ROOT_DIR}/projects/bootloader/boards/stm32f401re/Src/system_stm32f4xx.c
     ${GIT_ROOT_DIR}/projects/bootloader/boards/stm32f401re/startup_stm32f401xe.s
+    # --- Actual application ---
+    ${GIT_ROOT_DIR}/projects/bootloader/src/main.c
+    ${GIT_ROOT_DIR}/projects/bootloader/src/drivers/sys/sys_init.c
+    ${GIT_ROOT_DIR}/projects/bootloader/src/drivers/sys/sys.c
+    ${GIT_ROOT_DIR}/projects/bootloader/src/drivers/uart/uart_driver.c
+    ${GIT_ROOT_DIR}/projects/bootloader/src/drivers/crc/crc_driver.c
+    ${GIT_ROOT_DIR}/projects/bootloader/src/drivers/flash/flash_driver.c
 )
 
 # Build the executable based on the source files
@@ -129,14 +136,20 @@ target_link_libraries(${EXECUTABLE} third_party)
 target_compile_definitions(${EXECUTABLE} PRIVATE
         )
 
-# List of includ directories
+# List of include directories
 target_include_directories(${EXECUTABLE} PRIVATE
         ${GIT_ROOT_DIR}/projects/bootloader/boards/stm32f401re/Inc
-        ${GIT_ROOT_DIR}/projects/bootloader/src
         ${GIT_ROOT_DIR}/third_party/Drivers/STM32F4xx_HAL_Driver/Inc
         ${GIT_ROOT_DIR}/third_party/Drivers/STM32F4xx_HAL_Driver/Inc/Legacy
         ${GIT_ROOT_DIR}/third_party/Drivers/CMSIS/Device/ST/STM32F4xx/Include
         ${GIT_ROOT_DIR}/third_party/Drivers/CMSIS/Include
+        # --- Actual application ---
+        ${GIT_ROOT_DIR}/projects/bootloader/src
+        ${GIT_ROOT_DIR}/projects/bootloader/src/drivers/uart
+        ${GIT_ROOT_DIR}/projects/bootloader/src/drivers/flash
+        ${GIT_ROOT_DIR}/projects/bootloader/src/drivers/crc
+        ${GIT_ROOT_DIR}/projects/bootloader/src/drivers/auth
+        ${GIT_ROOT_DIR}/projects/bootloader/src/drivers/sys
         )
 
 # Compiler options
@@ -171,9 +184,11 @@ target_link_options(${EXECUTABLE} PRIVATE
         )
 
 add_custom_command(TARGET ${EXECUTABLE}
-        POST_BUILD
-        COMMAND ${CMAKE_OBJCOPY} -O srec --srec-len=64 ${EXECUTABLE} ${CMAKE_BINARY_DIR}/s19/${PROJECT_NAME}.s19
-        COMMAND ${CMAKE_OBJCOPY} -O ihex ${EXECUTABLE} ${CMAKE_BINARY_DIR}/hex/${PROJECT_NAME}.hex
-        COMMAND ${CMAKE_OBJCOPY} -O binary ${EXECUTABLE} ${CMAKE_BINARY_DIR}/bin/${PROJECT_NAME}.bin
-        COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:${EXECUTABLE}> ${CMAKE_BINARY_DIR}/${PROJECT_NAME}.elf
-        )
+    POST_BUILD
+    COMMAND ${CMAKE_OBJCOPY} -O srec --srec-len=64 ${EXECUTABLE} ${CMAKE_BINARY_DIR}/s19/${PROJECT_NAME}.s19
+    COMMAND ${CMAKE_OBJCOPY} -O ihex ${EXECUTABLE} ${CMAKE_BINARY_DIR}/hex/${PROJECT_NAME}.hex
+    COMMAND ${CMAKE_OBJCOPY} -O binary ${EXECUTABLE} ${CMAKE_BINARY_DIR}/bin/${PROJECT_NAME}.bin
+    COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:${EXECUTABLE}> ${CMAKE_BINARY_DIR}/${PROJECT_NAME}.elf
+    COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_SOURCE_DIR}/build/${PROJECT_NAME}.map ${CMAKE_BINARY_DIR}/${PROJECT_NAME}.map
+    COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_SOURCE_DIR}/build/compile_commands.json ${CMAKE_BINARY_DIR}/compile_commands.json
+    )
