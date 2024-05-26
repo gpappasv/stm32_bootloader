@@ -9,5 +9,10 @@
  *
  */
 
+#ifndef CRC_DRIVER_H
+#define CRC_DRIVER_H
+
 // --- function declarations -------------------------------------------------------------------------------------------
 void crc_driver_init(void);
+
+#endif // CRC_DRIVER_H

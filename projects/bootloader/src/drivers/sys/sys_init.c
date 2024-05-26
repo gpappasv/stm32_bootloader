@@ -15,13 +15,16 @@
 
 #include <stdio.h>
 #include "stm32f4xx_hal.h"
+#include "common.h"
 
 // --- static function declarations ------------------------------------------------------------------------------------
 static void SystemClock_Config(void);
 
 // --- static function definitions -------------------------------------------------------------------------------------
 /**
- * @brief System Clock Configuration
+ * @brief
+ *
+ *
  * @retval None
  */
 static void

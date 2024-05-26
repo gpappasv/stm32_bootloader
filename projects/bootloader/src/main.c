@@ -19,9 +19,8 @@
 #include "sys.h"
 #include "uart_driver.h"
 #include "crc_driver.h"
-
-// --- defines ---------------------------------------------------------------------------------------------------------
-#define FLASH_APP_START_ADDR 0x8008000 // Bootloader reserves the first 32KB
+#include "flash_apis.h"
+#include "drivers/common.h"
 
 // --- typedefs --------------------------------------------------------------------------------------------------------
 typedef void (*bl_func_ptr)(void);
@@ -43,14 +42,16 @@ boot_application(void)
 
     // check if there is something "installed" in the app FLASH region
     // TODO: GPA: need to find a specific pattern to identify our application
-    if (((*(uint32_t *)FLASH_APP_START_ADDR) & 0x2FFE0000) == 0x20000000)
+    if (((*(uint32_t *)((uint32_t) & __flash_app_start__)) & 0x2FFE0000) == 0x20000000)
     {
+        // TODO: GPA: we can check here if the stack pointer is within valid RAM region
+        // TODO: GPA: we can check here if the reset handler is a valid address, within the FLASH region
         printf("APP Start ...\r\n");
         // jump to the application
-        jump_address         = *(uint32_t *)(FLASH_APP_START_ADDR + 4);
+        jump_address        = *(uint32_t *)(((uint32_t) & __flash_app_start__) + 4);
         jump_to_application = (bl_func_ptr)jump_address;
         // initialize application's stack pointer
-        set_msp(FLASH_APP_START_ADDR);
+        set_msp(((uint32_t) & __flash_app_start__));
         jump_to_application();
     }
     else

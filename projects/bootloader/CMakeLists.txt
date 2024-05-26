@@ -98,7 +98,7 @@ target_compile_options(third_party PRIVATE -Wno-unused-parameter -mthumb
         -fdata-sections
         -ffunction-sections
         -fstack-usage)
-        
+
 target_link_options(third_party PRIVATE
         -T${LINKER_FILE}
         -mthumb
@@ -125,6 +125,8 @@ set(SRC_FILES
     ${GIT_ROOT_DIR}/projects/bootloader/src/drivers/uart/uart_driver.c
     ${GIT_ROOT_DIR}/projects/bootloader/src/drivers/crc/crc_driver.c
     ${GIT_ROOT_DIR}/projects/bootloader/src/drivers/flash/flash_driver.c
+    ${GIT_ROOT_DIR}/projects/bootloader/src/drivers/flash/flash_apis.c
+    ${GIT_ROOT_DIR}/projects/bootloader/src/drivers/mpu/mpu_driver.c
 )
 
 # Build the executable based on the source files
@@ -150,6 +152,8 @@ target_include_directories(${EXECUTABLE} PRIVATE
         ${GIT_ROOT_DIR}/projects/bootloader/src/drivers/crc
         ${GIT_ROOT_DIR}/projects/bootloader/src/drivers/auth
         ${GIT_ROOT_DIR}/projects/bootloader/src/drivers/sys
+        ${GIT_ROOT_DIR}/projects/bootloader/src/drivers/mpu
+        ${GIT_ROOT_DIR}/projects/bootloader/src/drivers
         )
 
 # Compiler options
