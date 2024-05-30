@@ -18,6 +18,7 @@
 #include "sys_init.h"
 #include "sys.h"
 #include "uart_driver.h"
+#include "crc_apis.h"
 #include "crc_driver.h"
 #include "flash_apis.h"
 #include "drivers/common.h"

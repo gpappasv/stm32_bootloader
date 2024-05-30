@@ -82,6 +82,7 @@ sys_init(void)
 void
 sys_prepare_for_application(void)
 {
+    printf("Deinitializing peripherals and preparing for application start\r\n");
     // Deinitialize peripherals to their reset state
     HAL_RCC_DeInit();
     HAL_DeInit();
