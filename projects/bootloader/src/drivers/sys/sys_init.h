@@ -17,5 +17,6 @@
 
 // --- function declarations -------------------------------------------------------------------------------------------
 void sys_init(void);
+void sys_prepare_for_application(void);
 
 #endif // SYS_INIT_H

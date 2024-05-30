@@ -23,7 +23,7 @@ sys_delay_ms(uint32_t delay)
 }
 
 void
-set_msp(size_t addr)
+sys_set_msp(size_t addr)
 {
     __set_MSP(*(uint32_t *)addr);
 }
