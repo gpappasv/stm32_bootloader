@@ -98,4 +98,5 @@ sys_prepare_for_application(void)
 
     // Set the vector table to the application's vector table
     SCB->VTOR = (uint32_t)&__flash_app_start__;
+    __enable_irq();
 }

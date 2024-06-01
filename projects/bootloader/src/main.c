@@ -48,13 +48,13 @@ boot_application(void)
         // TODO: GPA: we can check here if the stack pointer is within valid RAM region
         // TODO: GPA: we can check here if the reset handler is a valid address, within the FLASH region
         printf("APP Start ...\r\n");
-        // prepare for the application
-        sys_prepare_for_application();
         // jump to the application
         jump_address        = *(uint32_t *)(((uint32_t) & __flash_app_start__) + 4);
         jump_to_application = (bl_func_ptr)jump_address;
         // initialize application's stack pointer
         sys_set_msp(((uint32_t) & __flash_app_start__));
+        // prepare for the application
+        sys_prepare_for_application();
         jump_to_application();
     }
     else
