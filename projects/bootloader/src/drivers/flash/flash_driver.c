@@ -124,7 +124,8 @@ flash_driver_program(const uint8_t *p_src_ram, uint32_t flash_address, uint32_t 
     }
 
     // check if data will be written in a valid address
-    if ((flash_address < ((uint32_t) & __flash_app_start__)) || ((flash_address + length_bytes) > ((uint32_t) & __flash_app_secondary_end__)))
+    if ((flash_address < ((uint32_t)&__flash_app_start__))
+        || ((flash_address + length_bytes) > ((uint32_t)&__flash_app_secondary_end__)))
     {
         printf("Flash write: failed\n");
         return false;

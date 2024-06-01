@@ -39,20 +39,19 @@ boot_application(void)
 {
     uint32_t    jump_address;
     bl_func_ptr jump_to_application;
-    printf("BOOTLOADER Start \r\n");
 
     // check if there is something "installed" in the app FLASH region
     // TODO: GPA: need to find a specific pattern to identify our application
-    if (((*(uint32_t *)((uint32_t) & __flash_app_start__)) & 0x2FFE0000) == 0x20000000)
+    if (((*(uint32_t *)((uint32_t)&__flash_app_start__)) & 0x2FFE0000) == 0x20000000)
     {
         // TODO: GPA: we can check here if the stack pointer is within valid RAM region
         // TODO: GPA: we can check here if the reset handler is a valid address, within the FLASH region
         printf("APP Start ...\r\n");
         // jump to the application
-        jump_address        = *(uint32_t *)(((uint32_t) & __flash_app_start__) + 4);
+        jump_address        = *(uint32_t *)(((uint32_t)&__flash_app_start__) + 4);
         jump_to_application = (bl_func_ptr)jump_address;
         // initialize application's stack pointer
-        sys_set_msp(((uint32_t) & __flash_app_start__));
+        sys_set_msp(((uint32_t)&__flash_app_start__));
         // prepare for the application
         sys_prepare_for_application();
         jump_to_application();
@@ -74,10 +73,32 @@ main(void)
 {
     sys_init();
     uart_driver_init();
-    crc_driver_init();
+    printf(" --- BOOTLOADER Start --- \r\n");
 
-    // Try to find and boot the application
-    boot_application();
+    // Check the CRC of the primary application
+    if (crc_api_check_primary_app())
+    {
+        // Boot the primary application, if the CRC check is successful
+        boot_application();
+    }
+    else if (crc_api_check_secondary_app())
+    {
+        flash_api_transfer_secondary_to_primary();
+        if (crc_api_check_primary_app())
+        {
+            boot_application();
+        }
+        else
+        {
+            printf("CRC check failed for primary application\r\n");
+        }
+    }
+    else
+    {
+        // No valid application found, stay in the bootloader
+        printf("No valid application found, staying in bootloader\r\n");
+    }
+
     while (1)
     {
         printf("Bootloader loop...\r\n");

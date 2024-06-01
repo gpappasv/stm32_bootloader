@@ -58,16 +58,35 @@ _estack = 0x20018000;    /* end of RAM */
 _Min_Heap_Size = 0x200;      /* required amount of heap  */
 _Min_Stack_Size = 0x400; /* required amount of stack */
 
+/* Image header info */
+__header_size_bytes__ = 40;
+__header_crc_size_bytes__ = 4;
+__header_fw_ver_size_bytes__ = 4;
+__header_hash_size_bytes__ = 32;
+
+/* Primary app info */
 __flash_app_start__ = 0x08008000;
 __flash_app_end__ = 0x0803FFFF;
+__header_app_start__ = __flash_app_end__ - __header_size_bytes__ + 1;
+__header_app_end__ = __flash_app_end__;
+__header_app_crc_start__ = __header_app_start__;
+__header_app_fw_version_start__ = __header_app_start__ + __header_crc_size_bytes__;
+__header_app_hash_start__ = __header_app_start__ + __header_crc_size_bytes__ + __header_fw_ver_size_bytes__;
+
+/* Secondary app info */
 __flash_app_secondary_start__ = 0x08040000;
 __flash_app_secondary_end__ = 0x08077FFF;
+__header_app_secondary_start__ = __flash_app_secondary_end__ - __header_size_bytes__ + 1;
+__header_app_secondary_end__ = __flash_app_secondary_end__;
+__header_app_secondary_crc_start__ = __header_app_secondary_start__;
+__header_app_secondary_fw_version_start__ = __header_app_secondary_start__ + __header_crc_size_bytes__;
+__header_app_secondary_hash_start__ = __header_app_secondary_start__ + __header_crc_size_bytes__ + __header_fw_ver_size_bytes__;
 
 /* Specify the memory areas */
 MEMORY
 {
 RAM (xrw)      : ORIGIN = 0x20000000, LENGTH = 96K
-FLASH (rx)      : ORIGIN = __flash_app_start__, LENGTH = __flash_app_end__ - __flash_app_start__ + 1/* 512K */
+FLASH (rx)      : ORIGIN = __flash_app_start__, LENGTH = __flash_app_end__ - __flash_app_start__ + 1 - __header_size_bytes__ /* 512K */
 }
 
 /* Define output sections */
