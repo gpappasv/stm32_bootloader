@@ -44,7 +44,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 message(STATUS "CMAKE_TOOLCHAIN_FILE is: ${CMAKE_TOOLCHAIN_FILE}")
 
 # --- HAL drivers ---
-include(../hal-drivers.cmake)
+include(${GIT_ROOT_DIR}/projects/bootloader/hal-drivers.cmake)
 
 # --- Application code ---
 # List of bootloader's source files
