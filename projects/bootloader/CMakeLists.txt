@@ -43,76 +43,11 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 # issue a message to be sure it uses the correct toolchain file.
 message(STATUS "CMAKE_TOOLCHAIN_FILE is: ${CMAKE_TOOLCHAIN_FILE}")
 
-# Create the build directory for cmake
-set(CMAKE_BINARY_DIR ${GIT_ROOT_DIR}/build/bootloader/cmake)
-# Remove any existing files in the output directory
-file(REMOVE_RECURSE ${CMAKE_BINARY_DIR})
-# Create the output directory
-file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR})
-file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
-file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/hex)
-file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/s19)
+# --- HAL drivers ---
+include(../hal-drivers.cmake)
 
-# List of source files
-set(THIRD_PARTY_SRC_FILES
-    ${GIT_ROOT_DIR}/third_party/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_tim.c
-    ${GIT_ROOT_DIR}/third_party/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_tim_ex.c
-    ${GIT_ROOT_DIR}/third_party/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_uart.c
-    ${GIT_ROOT_DIR}/third_party/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_rcc.c
-    ${GIT_ROOT_DIR}/third_party/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_rcc_ex.c
-    ${GIT_ROOT_DIR}/third_party/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_flash.c
-    ${GIT_ROOT_DIR}/third_party/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_flash_ex.c
-    ${GIT_ROOT_DIR}/third_party/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_flash_ramfunc.c
-    ${GIT_ROOT_DIR}/third_party/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_gpio.c
-    ${GIT_ROOT_DIR}/third_party/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c
-    ${GIT_ROOT_DIR}/third_party/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma.c
-    ${GIT_ROOT_DIR}/third_party/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c
-    ${GIT_ROOT_DIR}/third_party/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr_ex.c
-    ${GIT_ROOT_DIR}/third_party/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_cortex.c
-    ${GIT_ROOT_DIR}/third_party/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal.c
-    ${GIT_ROOT_DIR}/third_party/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_exti.c
-    ${GIT_ROOT_DIR}/third_party/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_crc.c
-)
-
-add_library(third_party ${THIRD_PARTY_SRC_FILES})
-
-# List of compiler defines, prefix with -D compiler option
-target_compile_definitions(third_party PUBLIC
-        #-DUSE_HAL_DRIVER
-        -DSTM32F401xE
-        )
-
-target_include_directories(third_party PUBLIC
-    ${GIT_ROOT_DIR}/projects/bootloader/boards/stm32f401re/Inc
-    ${GIT_ROOT_DIR}/third_party/Drivers/STM32F4xx_HAL_Driver/Inc
-    ${GIT_ROOT_DIR}/third_party/Drivers/STM32F4xx_HAL_Driver/Inc/Legacy
-    ${GIT_ROOT_DIR}/third_party/Drivers/CMSIS/Device/ST/STM32F4xx/Include
-    ${GIT_ROOT_DIR}/third_party/Drivers/CMSIS/Include
-)
-
-target_compile_options(third_party PRIVATE -Wno-unused-parameter -mthumb
-        -mcpu=cortex-m4
-        -mfloat-abi=soft
-        -Wall
-        -Wextra
-        -fdata-sections
-        -ffunction-sections
-        -fstack-usage)
-
-target_link_options(third_party PRIVATE
-        -T${LINKER_FILE}
-        -mthumb
-        -mcpu=cortex-m4
-        -mfloat-abi=soft
-        -specs=nosys.specs
-        -specs=nano.specs
-        -Wl,-Map=${PROJECT_NAME}.map,--cref
-        -Wl,--gc-sections
-        -Wl,--print-memory-usage
-        -lc
-        -lnosys)
-
-
+# --- Application code ---
+# List of bootloader's source files
 set(SRC_FILES
     ${GIT_ROOT_DIR}/projects/bootloader/boards/stm32f401re/Src/stm32f4xx_it.c
     ${GIT_ROOT_DIR}/projects/bootloader/boards/stm32f401re/Src/stm32f4xx_hal_msp.c
@@ -133,7 +68,8 @@ set(SRC_FILES
 # Build the executable based on the source files
 add_executable(${EXECUTABLE} ${SRC_FILES})
 
-target_link_libraries(${EXECUTABLE} third_party)
+# Link all external libraries to executable
+target_link_libraries(${EXECUTABLE} hal_drivers)
 
 # List of compiler defines, prefix with -D compiler option
 target_compile_definitions(${EXECUTABLE} PRIVATE
@@ -141,12 +77,6 @@ target_compile_definitions(${EXECUTABLE} PRIVATE
 
 # List of include directories
 target_include_directories(${EXECUTABLE} PRIVATE
-        ${GIT_ROOT_DIR}/projects/bootloader/boards/stm32f401re/Inc
-        ${GIT_ROOT_DIR}/third_party/Drivers/STM32F4xx_HAL_Driver/Inc
-        ${GIT_ROOT_DIR}/third_party/Drivers/STM32F4xx_HAL_Driver/Inc/Legacy
-        ${GIT_ROOT_DIR}/third_party/Drivers/CMSIS/Device/ST/STM32F4xx/Include
-        ${GIT_ROOT_DIR}/third_party/Drivers/CMSIS/Include
-        # --- Actual application ---
         ${GIT_ROOT_DIR}/projects/bootloader/src
         ${GIT_ROOT_DIR}/projects/bootloader/src/drivers/uart
         ${GIT_ROOT_DIR}/projects/bootloader/src/drivers/flash
@@ -190,10 +120,7 @@ target_link_options(${EXECUTABLE} PRIVATE
 
 add_custom_command(TARGET ${EXECUTABLE}
     POST_BUILD
-    COMMAND ${CMAKE_OBJCOPY} -O srec --srec-len=64 ${EXECUTABLE} ${CMAKE_BINARY_DIR}/s19/${PROJECT_NAME}.s19
-    COMMAND ${CMAKE_OBJCOPY} -O ihex ${EXECUTABLE} ${CMAKE_BINARY_DIR}/hex/${PROJECT_NAME}.hex
-    COMMAND ${CMAKE_OBJCOPY} -O binary ${EXECUTABLE} ${CMAKE_BINARY_DIR}/bin/${PROJECT_NAME}.bin
-    COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:${EXECUTABLE}> ${CMAKE_BINARY_DIR}/${PROJECT_NAME}.elf
-    COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_SOURCE_DIR}/build/${PROJECT_NAME}.map ${CMAKE_BINARY_DIR}/${PROJECT_NAME}.map
-    COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_SOURCE_DIR}/build/compile_commands.json ${CMAKE_BINARY_DIR}/compile_commands.json
+    COMMAND ${CMAKE_OBJCOPY} -O srec --srec-len=64 ${EXECUTABLE} ${CMAKE_SOURCE_DIR}/build/${PROJECT_NAME}.s19
+    COMMAND ${CMAKE_OBJCOPY} -O ihex ${EXECUTABLE} ${CMAKE_SOURCE_DIR}/build/${PROJECT_NAME}.hex
+    COMMAND ${CMAKE_OBJCOPY} -O binary ${EXECUTABLE} ${CMAKE_SOURCE_DIR}/build/${PROJECT_NAME}.bin
     )
