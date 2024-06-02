@@ -18,6 +18,13 @@
 #include "common.h"
 
 // --- function definitions --------------------------------------------------------------------------------------------
+/**
+ * @brief Function that checks the primary application's CRC. It calculates the CRC of the primary application and
+ * compares it with the stored CRC.
+ *
+ * @return true
+ * @return false
+ */
 bool
 crc_api_check_primary_app(void)
 {
@@ -38,6 +45,13 @@ crc_api_check_primary_app(void)
     return true;
 }
 
+/**
+ * @brief Function that checks the secondary application's CRC. It calculates the CRC of the secondary application and
+ * compares it with the stored CRC.
+ *
+ * @return true
+ * @return false
+ */
 bool
 crc_api_check_secondary_app(void)
 {

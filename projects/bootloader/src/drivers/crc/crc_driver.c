@@ -18,6 +18,14 @@
 static uint32_t compute_crc32(const uint8_t *data, uint32_t length);
 
 // --- static function definitions -------------------------------------------------------------------------------------
+/**
+ * @brief Function to compute the CRC32 of the given data. It uses the CRC32 software implementation. The data is passed
+ * as a pointer to the start of the data and the length of the data. Returns the calculated CRC.
+ *
+ * @param data
+ * @param length
+ * @return uint32_t
+ */
 static uint32_t
 compute_crc32(const uint8_t *data, uint32_t length)
 {
@@ -39,6 +47,14 @@ compute_crc32(const uint8_t *data, uint32_t length)
 }
 
 // --- function definitions --------------------------------------------------------------------------------------------
+/**
+ * @brief Function to calculate the CRC of the given data. It uses the CRC32 software implementation. The data is
+ * passed as a pointer to the start of the data and the size of the data. Returns the calculated CRC.
+ *
+ * @param data
+ * @param size
+ * @return uint32_t calculated CRC
+ */
 uint32_t
 crc_driver_calculate(uint32_t *data, uint32_t size)
 {

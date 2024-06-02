@@ -65,7 +65,8 @@ flash_api_erase_secondary_space(void)
 
 // --- function definitions --------------------------------------------------------------------------------------------
 /**
- * @brief Function to transfer the app data from secondary space to primary.
+ * @brief Function to transfer the app data from secondary space to primary. Can be used to recover the primary app, if
+ * the secondary is valid.
  *
  * @return true
  * @return false

@@ -22,7 +22,7 @@ static void SystemClock_Config(void);
 
 // --- static function definitions -------------------------------------------------------------------------------------
 /**
- * @brief
+ * @brief System Clock Configuration. Given by STM32CubeMX.
  *
  *
  * @retval None
@@ -68,6 +68,10 @@ SystemClock_Config(void)
 }
 
 // --- function definitions --------------------------------------------------------------------------------------------
+/**
+ * @brief Function that encapsulates the system initialization process
+ *
+ */
 void
 sys_init(void)
 {
@@ -76,7 +80,8 @@ sys_init(void)
 }
 
 /**
- * @brief Prepare the system for the application to run
+ * @brief Prepare the system for the application to run. This means deinitializing peripherals and preparing the vector
+ *       table for the application.
  *
 */
 void
