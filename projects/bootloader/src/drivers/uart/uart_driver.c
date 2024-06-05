@@ -60,6 +60,14 @@ MX_USART2_UART_Init(void) // Change from MX_USART1_UART_Init to MX_USART2_UART_I
     }
 }
 // --- function definitions --------------------------------------------------------------------------------------------
+/**
+ * @brief Function to forward the printf output to the uart peripheral.
+ *
+ * @param file
+ * @param ptr
+ * @param len
+ * @return int
+ */
 int
 _write(int file, char *ptr, int len)
 {
@@ -73,6 +81,10 @@ _write(int file, char *ptr, int len)
     return len;
 }
 
+/**
+ * @brief Function to initialize the uart peripheral, of the stm32f401re.
+ *
+ */
 void
 uart_driver_init(void)
 {

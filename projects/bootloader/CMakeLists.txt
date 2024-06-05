@@ -124,6 +124,7 @@ set(SRC_FILES
     ${GIT_ROOT_DIR}/projects/bootloader/src/drivers/sys/sys.c
     ${GIT_ROOT_DIR}/projects/bootloader/src/drivers/uart/uart_driver.c
     ${GIT_ROOT_DIR}/projects/bootloader/src/drivers/crc/crc_driver.c
+    ${GIT_ROOT_DIR}/projects/bootloader/src/drivers/crc/crc_apis.c
     ${GIT_ROOT_DIR}/projects/bootloader/src/drivers/flash/flash_driver.c
     ${GIT_ROOT_DIR}/projects/bootloader/src/drivers/flash/flash_apis.c
     ${GIT_ROOT_DIR}/projects/bootloader/src/drivers/mpu/mpu_driver.c

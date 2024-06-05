@@ -51,6 +51,15 @@ flash_driver_write_disable(void)
 }
 
 // --- function definitions --------------------------------------------------------------------------------------------
+/**
+ * @brief Function to erase the flash content in the specified address range. NOTE: the stm32f401re does not support
+ * erasing a range of addresses, so the function erases the whole sectors that the range belongs to.
+ *
+ * @param start_address
+ * @param end_address
+ * @return true
+ * @return false
+ */
 bool
 flash_driver_erase(uint32_t start_address, uint32_t end_address)
 {
@@ -103,6 +112,13 @@ flash_driver_erase(uint32_t start_address, uint32_t end_address)
     return false;
 }
 
+/**
+ * @brief Function to read the flash content from the specified address to the destination buffer.
+ *
+ * @param p_dest
+ * @param p_src
+ * @param length_bytes
+ */
 void
 flash_driver_read(uint8_t *p_dest, const uint8_t *p_src, uint32_t length_bytes)
 {
@@ -113,6 +129,17 @@ flash_driver_read(uint8_t *p_dest, const uint8_t *p_src, uint32_t length_bytes)
     };
 }
 
+/**
+ * @brief Function to write the data from the source RAM to the flash memory. The data is written to the specified
+ * address. The function writes the data byte by byte. The function returns true if the write is successful, otherwise
+ * false.
+ *
+ * @param p_src_ram
+ * @param flash_address
+ * @param length_bytes
+ * @return true
+ * @return false
+ */
 bool
 flash_driver_program(const uint8_t *p_src_ram, uint32_t flash_address, uint32_t length_bytes)
 {
@@ -124,7 +151,8 @@ flash_driver_program(const uint8_t *p_src_ram, uint32_t flash_address, uint32_t 
     }
 
     // check if data will be written in a valid address
-    if ((flash_address < ((uint32_t) & __flash_app_start__)) || ((flash_address + length_bytes) > ((uint32_t) & __flash_app_secondary_end__)))
+    if ((flash_address < ((uint32_t)&__flash_app_start__))
+        || ((flash_address + length_bytes) > ((uint32_t)&__flash_app_secondary_end__)))
     {
         printf("Flash write: failed\n");
         return false;

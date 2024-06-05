@@ -16,12 +16,22 @@
 #include "stm32f4xx_hal.h"
 
 // --- function definitions --------------------------------------------------------------------------------------------
+/**
+ * @brief Delay function in milliseconds. Currently using HAL_Delay.
+ *
+ * @param delay
+ */
 void
 sys_delay_ms(uint32_t delay)
 {
     HAL_Delay(delay);
 }
 
+/**
+ * @brief Function to set the MSP register to the given address. This is used to jump to the application.
+ *
+ * @param addr
+ */
 void
 sys_set_msp(size_t addr)
 {

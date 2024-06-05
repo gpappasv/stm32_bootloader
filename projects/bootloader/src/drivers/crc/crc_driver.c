@@ -13,32 +13,53 @@
 #include "crc_driver.h"
 
 #include <stdio.h>
-#include "stm32f4xx_hal.h"
-
-// --- static variable definitions -------------------------------------------------------------------------------------
-CRC_HandleTypeDef hcrc;
 
 // --- static function declarations ------------------------------------------------------------------------------------
-static void MX_CRC_Init(void);
+static uint32_t compute_crc32(const uint8_t *data, uint32_t length);
 
 // --- static function definitions -------------------------------------------------------------------------------------
 /**
- * @brief CRC Initialization Function
- * @param None
- * @retval None
+ * @brief Function to compute the CRC32 of the given data. It uses the CRC32 software implementation. The data is passed
+ * as a pointer to the start of the data and the length of the data. Returns the calculated CRC.
+ *
+ * @param data
+ * @param length
+ * @return uint32_t
  */
-static void
-MX_CRC_Init(void)
+static uint32_t
+compute_crc32(const uint8_t *data, uint32_t length)
 {
-    hcrc.Instance = CRC;
-    if (HAL_CRC_Init(&hcrc) != HAL_OK)
+    uint32_t crc = 0xFFFFFFFF;
+
+    for (uint32_t i = 0; i < length; i++)
     {
-        printf("Error initializing crc module\n");
+        crc ^= data[i];
+        for (uint8_t j = 0; j < 8; j++)
+        {
+            if (crc & 1)
+                crc = (crc >> 1) ^ 0xEDB88320;
+            else
+                crc >>= 1;
+        }
     }
+
+    return crc ^ 0xFFFFFFFF;
 }
 
 // --- function definitions --------------------------------------------------------------------------------------------
-void crc_driver_init(void)
+/**
+ * @brief Function to calculate the CRC of the given data. It uses the CRC32 software implementation. The data is
+ * passed as a pointer to the start of the data and the size of the data. Returns the calculated CRC.
+ *
+ * @param data
+ * @param size
+ * @return uint32_t calculated CRC
+ */
+uint32_t
+crc_driver_calculate(uint32_t *data, uint32_t size)
 {
-    MX_CRC_Init();
+    uint32_t crc = 0;
+    printf("Calculating CRC of %lu bytes from address %p to %p\r\n", size, data, data + size);
+    crc = compute_crc32((uint8_t *)data, size);
+    return crc;
 }
