@@ -74,7 +74,6 @@ main(void)
     sys_init();
     uart_driver_init();
     printf(" --- BOOTLOADER Start --- \r\n");
-
     // Check the CRC of the primary application
     if (crc_api_check_primary_app())
     {

@@ -16,9 +16,11 @@
 #include <stdio.h>
 #include "stm32f4xx_hal.h"
 #include "common.h"
+#include "mpu/mpu_driver.h"
 
 // --- static function declarations ------------------------------------------------------------------------------------
 static void SystemClock_Config(void);
+static void set_unprivileged_mode(void);
 
 // --- static function definitions -------------------------------------------------------------------------------------
 /**
@@ -67,6 +69,16 @@ SystemClock_Config(void)
     }
 }
 
+static void
+set_unprivileged_mode(void)
+{
+    // Set CONTROL register to switch to unprivileged mode
+    __asm__("MOV R0, #1");      // Move the value of CONTROL register into R0
+    __asm__("MSR CONTROL, R0"); // Move the modified value back to CONTROL register
+    __DSB();                    // Data Synchronization Barrier
+    __ISB();                    // Instruction Synchronization Barrier
+}
+
 // --- function definitions --------------------------------------------------------------------------------------------
 /**
  * @brief Function that encapsulates the system initialization process
@@ -83,7 +95,7 @@ sys_init(void)
  * @brief Prepare the system for the application to run. This means deinitializing peripherals and preparing the vector
  *       table for the application.
  *
-*/
+ */
 void
 sys_prepare_for_application(void)
 {
@@ -103,5 +115,10 @@ sys_prepare_for_application(void)
 
     // Set the vector table to the application's vector table
     SCB->VTOR = (uint32_t)&__flash_app_start__;
+    // Enable the MPU, to protect the bootloader.
+    mpu_config_lock();
+    // TODO: GPA: It is important to set the unprivileged mode after the MPU is enabled, to protect bootloader.
+    // Right now, setting the unprivileged mode is commented out, because it will cause the bootloader to crash.
+    //set_unprivileged_mode();
     __enable_irq();
 }
