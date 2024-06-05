@@ -15,13 +15,16 @@
 
 #include <stdio.h>
 #include "stm32f4xx_hal.h"
+#include "common.h"
 
 // --- static function declarations ------------------------------------------------------------------------------------
 static void SystemClock_Config(void);
 
 // --- static function definitions -------------------------------------------------------------------------------------
 /**
- * @brief System Clock Configuration
+ * @brief
+ *
+ *
  * @retval None
  */
 static void
@@ -70,4 +73,28 @@ sys_init(void)
 {
     SystemClock_Config();
     HAL_Init();
+}
+
+/**
+ * @brief Prepare the system for the application to run
+ *
+*/
+void
+sys_prepare_for_application(void)
+{
+    // Deinitialize peripherals to their reset state
+    HAL_RCC_DeInit();
+    HAL_DeInit();
+
+    // Disable all interrupts
+    __disable_irq();
+    // Clear pending interrupts
+    for (int i = 0; i < 8; i++)
+    {
+        NVIC->ICER[i] = 0xFFFFFFFF;
+        NVIC->ICPR[i] = 0xFFFFFFFF;
+    }
+
+    // Set the vector table to the application's vector table
+    SCB->VTOR = (uint32_t)&__flash_app_start__;
 }

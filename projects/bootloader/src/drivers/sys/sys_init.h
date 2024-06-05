@@ -9,8 +9,14 @@
  *
  */
 
+#ifndef SYS_INIT_H
+#define SYS_INIT_H
+
 // --- includes --------------------------------------------------------------------------------------------------------
 #include "stm32f4xx_hal.h"
 
 // --- function declarations -------------------------------------------------------------------------------------------
 void sys_init(void);
+void sys_prepare_for_application(void);
+
+#endif // SYS_INIT_H

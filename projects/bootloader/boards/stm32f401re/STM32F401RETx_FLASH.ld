@@ -58,6 +58,11 @@ _estack = 0x20018000;    /* end of RAM */
 _Min_Heap_Size = 0x200;      /* required amount of heap  */
 _Min_Stack_Size = 0x400; /* required amount of stack */
 
+__flash_app_start__ = 0x08008000;
+__flash_app_end__ = 0x0803FFFF;
+__flash_app_secondary_start__ = 0x08040000;
+__flash_app_secondary_end__ = 0x08077FFF;
+
 /* Specify the memory areas */
 MEMORY
 {
@@ -134,7 +139,7 @@ SECTIONS
   _sidata = LOADADDR(.data);
 
   /* Initialized data sections goes into RAM, load LMA copy after code */
-  .data : 
+  .data :
   {
     . = ALIGN(4);
     _sdata = .;        /* create a global symbol at data start */
@@ -145,7 +150,7 @@ SECTIONS
     _edata = .;        /* define a global symbol at data end */
   } >RAM AT> FLASH
 
-  
+
   /* Uninitialized data section */
   . = ALIGN(4);
   .bss :
@@ -173,7 +178,7 @@ SECTIONS
     . = ALIGN(8);
   } >RAM
 
-  
+
 
   /* Remove information from the standard libraries */
   /DISCARD/ :

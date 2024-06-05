@@ -9,10 +9,15 @@
  *
  */
 
+#ifndef SYS_H
+#define SYS_H
+
 // --- includes --------------------------------------------------------------------------------------------------------
 #include <stdint.h>
 #include <stddef.h>
 
 // --- function declarations -------------------------------------------------------------------------------------------
 void sys_delay_ms(uint32_t delay);
-void set_msp(size_t addr);
+void sys_set_msp(size_t addr);
+
+#endif // SYS_H
