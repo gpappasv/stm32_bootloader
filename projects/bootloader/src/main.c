@@ -38,16 +38,18 @@ typedef enum
     BL_FSM_STATE_END,
 } bl_fsm_states_e;
 #define BL_FSM_STATE_COUNT (BL_FSM_STATE_END)
+
 /**
- * @brief Enumeration of the possible results of each state machine states.
+ * @brief Enumeration of the possible results of each state machine states. This is the return value of each handler,
+ * that will determine the next transition.
  *
  */
 typedef enum
 {
     BL_FSM_ERR_OR_NONE_EVT = 0,
-    BL_FSM_BUTTON_PRESSED_EVT,
     BL_FSM_CHECK_PASS_EVT,
     BL_FSM_CHECK_FAIL_EVT,
+    BL_FSM_BUTTON_PRESSED_EVT,
     BL_FSM_EVT_END,
 } bl_fsm_evts_e;
 #define BL_FSM_EVT_COUNT (BL_FSM_EVT_END)
@@ -84,6 +86,17 @@ static bl_fsm_evts_e fsm_bootloop_hdl(bl_fsm_ctx_s * const ctx);
 
 // State machine map
 // clang-format off
+/**
+ * @brief Based on the 'Last executed state' (current state - bl_fsm_states_e) and the output of the relevant handler (bl_fsm_evts_e)
+ * the next handler to be executed will be triggered.
+ * E.g. At first, the (current_state == BL_FSM_NONE_STATE and the hdl_output(evt) == BL_FSM_NONE_STATE) -> fsm_init_hdl will be executed.
+ *      The fsm_init_hdl, will set the current_state == BL_FSM_INIT_STATE and if (for example) hdl_output(evt) ==  BL_FSM_ERR_OR_NONE_EVT,
+ *      -> fsm_crc_check_hdl will be called on the next state machine cycle.
+ * 
+ * The purpose of this fsm is to follow a path, from the init (boot) phase to either booting the application, or entering the recovery
+ * mode.
+ * 
+ */
 static const bl_fsm_handler bl_fsm_map[BL_FSM_STATE_COUNT][BL_FSM_EVT_COUNT] = {
                                /* | BL_FSM_ERR_OR_NONE_EVT | BL_FSM_CHECK_PASS_EVT | BL_FSM_CHECK_FAIL_EVT | BL_FSM_BUTTON_PRESSED_EVT */
 /* BL_FSM_NONE_STATE           */ { fsm_init_hdl,            NULL,                   NULL,                   NULL },
@@ -144,11 +157,12 @@ fsm_init_hdl(bl_fsm_ctx_s * const ctx)
     {
         return -1;
     }
-    // Store the current state
-    ctx->curr_state = BL_FSM_INIT_STATE;
 
     // Initialize the context
     memset(ctx, 0, sizeof(bl_fsm_ctx_s));
+
+    // Store the current state
+    ctx->curr_state = BL_FSM_INIT_STATE;
 
     // Initialize the system
     sys_init();
@@ -361,6 +375,13 @@ fsm_bootloop_hdl(bl_fsm_ctx_s * const ctx)
     return BL_FSM_ERR_OR_NONE_EVT; // Stay in bootloop
 }
 
+/**
+ * @brief State handler for fsm error. This handler will be triggered when a faulty transition has happened. For now,
+ *        this handler just logs (prints) the transition that led to this error state and then enter a while (1)
+ * 
+ * @return int 
+ */
+
 // --- function definitions --------------------------------------------------------------------------------------------
 int
 main(void)
@@ -372,11 +393,11 @@ main(void)
     {
         // Get the current state
         bl_fsm_states_e curr_state = fsm_ctx.curr_state;
-
         // Check if current state, event or the selected state handler is valid
         if (curr_state >= BL_FSM_STATE_COUNT || evt >= BL_FSM_EVT_COUNT || bl_fsm_map[curr_state][evt] == NULL)
         {
             // Invalid state
+            printf("Current state: %d - event: %d\r\n", curr_state, evt);
             break;
         }
 
@@ -384,5 +405,6 @@ main(void)
         evt = bl_fsm_map[curr_state][evt](&fsm_ctx);
     }
 
+    printf("Bootloader: fatal error... Terminating.");
     return 0;
 }
