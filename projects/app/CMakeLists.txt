@@ -43,16 +43,6 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 # issue a message to be sure it uses the correct toolchain file.
 message(STATUS "CMAKE_TOOLCHAIN_FILE is: ${CMAKE_TOOLCHAIN_FILE}")
 
-# Create the build directory for cmake
-set(CMAKE_BINARY_DIR ${GIT_ROOT_DIR}/build/app/cmake)
-# Remove any existing files in the output directory
-file(REMOVE_RECURSE ${CMAKE_BINARY_DIR})
-# Create the output directory
-file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR})
-file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
-file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/hex)
-file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/s19)
-
 # List of source files
 set(THIRD_PARTY_SRC_FILES
     ${GIT_ROOT_DIR}/third_party/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_tim.c

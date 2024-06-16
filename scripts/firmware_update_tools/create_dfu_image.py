@@ -16,6 +16,8 @@
 import re
 import sys
 import hashlib
+import os
+import yaml
 
 CRC_SIZE_BYTES     = 4
 VERSION_SIZE_BYTES = 4
@@ -57,7 +59,8 @@ class BinaryAnalyzer:
         self.binary_data = binary_data
         self.linker_script_content = linker_script_content
         self.footer_size = FOOTER_SIZE_BYTES  # Footer size includes CRC32, version (4 bytes)
-        self.version = bytearray([0, 0, 0, 0])  # Example version (Major, Minor (2 bytes), Patch)
+        self.version = None
+        self.crc32 = None
 
         # Perform padding and footer appending during initialization
         self._calculate_img_size()
@@ -124,6 +127,8 @@ class BinaryAnalyzer:
         print(f"\nAdding CRC-32 to the footer: {crc32:08X}")
         footer_start = len(self.binary_data) - self.footer_size
         self.binary_data[footer_start:footer_start + CRC_SIZE_BYTES] = crc32.to_bytes(4, "little")
+        # Store crc32
+        self.crc32 = crc32
 
     def add_version_to_footer(self, version_major, version_minor, version_patch):
         """
@@ -136,6 +141,7 @@ class BinaryAnalyzer:
         """
         # Print the version information
         print(f"\nAdding version to footer: v{version_major}.{version_minor}.{version_patch}")
+        self.version = f'v{version_major}.{version_minor}.{version_patch}'
         footer_start = len(self.binary_data) - self.footer_size + CRC_SIZE_BYTES  # Offset for version after CRC32
         self.binary_data[footer_start] = version_major
         self.binary_data[footer_start + 1] = (version_minor >> 8) & 0xFF
@@ -153,12 +159,32 @@ class BinaryAnalyzer:
     def commit_to_file(self, file_path):
         """
         Commits the modified binary data to the given file path.
-        
+
         Args:
             file_path (str): The path of the file to write the binary data to.
         """
-        with open(file_path, "wb") as binary_file:
+        # Create a directory to store the firmware update files
+        update_folder = os.path.join(os.path.dirname(file_path), "update_firmware")
+        os.makedirs(update_folder, exist_ok=True)
+    
+        # Determine the filename of the binary file
+        binary_filename = os.path.basename(file_path)
+        # Create the full path to write the binary file inside the update folder
+        update_file_path = os.path.join(update_folder, binary_filename)
+
+        # Write the binary data to the specified file path
+        with open(update_file_path, "wb") as binary_file:
             binary_file.write(self.binary_data)
+
+        # Create a YAML file with specific information inside the update folder
+        yaml_info = {
+            "bin_crc": f"{self.crc32:08X}",
+            "bin_auth": "none",
+            "version_info": f"{self.version}"
+        }
+        yaml_file_path = os.path.join(update_folder, "firmware_info.yaml")
+        with open(yaml_file_path, "w") as yaml_file:
+            yaml.dump(yaml_info, yaml_file, default_flow_style=False)
 
 def main():
     if len(sys.argv) != 6:
