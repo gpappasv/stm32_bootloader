@@ -1,0 +1,34 @@
+# This yaml file is a configuration file that build.sh script uses. This yaml configuration is used by build.sh script
+# when it is invoked with all (build.sh all). The structure of this file is the following:
+# projects: 'Under this, the repository projects are described'
+#   - project_name: 'Based on the name given here, the build.sh script will discover the relevant project folder. All projects are under root_repo/projects/<project_name>'
+#     build_all: 'true or false: signals the build.sh script that this project should be included in the <build.sh all> procedure'
+#     dfu_image: 'This section is to provide the build.sh script with information related to the python script that creates the firmware update image.'
+#       enabled: 'true or false: signals the build.sh script that the binary of this project should be post-processed by the firmware update script'
+#       binary_path: 'the path/to/binary, relative to the root of the repository'
+#       linker_script: 'the path/to/linker_script, relative to the root of the repository'
+#       version: 'Version information for the firmware update binary. Will be used by the firmware update script to append the version info to the final binary'
+#         major:
+#         minor:
+#         patch:
+#   - project_name: ......
+
+projects:
+  - project_name: "app"
+    build_all: true
+    dfu_image:
+      enabled: true
+      binary_path: "projects/app/build/app.bin"
+      linker_script: "projects/app/boards/stm32f401re/STM32F401RETx_FLASH.ld"
+      version:
+        major: 1
+        minor: 1
+        patch: 0
+  - project_name: "bootloader"
+    build_all: true
+    dfu_image:
+      enabled: false
+  - project_name: "another_project"
+    build_all: false
+    dfu_image:
+      enabled: false

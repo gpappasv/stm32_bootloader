@@ -20,7 +20,6 @@
 
 // --- static function declarations ------------------------------------------------------------------------------------
 static void SystemClock_Config(void);
-static void set_unprivileged_mode(void);
 
 // --- static function definitions -------------------------------------------------------------------------------------
 /**
@@ -67,16 +66,6 @@ SystemClock_Config(void)
     {
         printf("Error initializing RCC\n");
     }
-}
-
-static void
-set_unprivileged_mode(void)
-{
-    // Set CONTROL register to switch to unprivileged mode
-    __asm__("MOV R0, #1");      // Move the value of CONTROL register into R0
-    __asm__("MSR CONTROL, R0"); // Move the modified value back to CONTROL register
-    __DSB();                    // Data Synchronization Barrier
-    __ISB();                    // Instruction Synchronization Barrier
 }
 
 // --- function definitions --------------------------------------------------------------------------------------------
