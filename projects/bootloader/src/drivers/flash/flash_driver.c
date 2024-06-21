@@ -31,7 +31,9 @@ flash_driver_write_enable(void)
 {
     if (HAL_FLASH_Unlock() != HAL_OK)
     {
+#ifdef DEBUG_LOG
         printf("Flash write enable: failed\r\n");
+#endif
         return false;
     }
 
@@ -43,7 +45,9 @@ flash_driver_write_disable(void)
 {
     if (HAL_FLASH_Lock() != HAL_OK)
     {
+#ifdef DEBUG_LOG
         printf("Flash write disable: failed\r\n");
+#endif
         return false;
     }
 
@@ -147,14 +151,18 @@ flash_driver_program(const uint8_t *p_src_ram, uint32_t flash_address, uint32_t 
 
     if (p_src_ram == NULL)
     {
+#ifdef DEBUG_LOG
         printf("Flash write: null pointer input\n");
+#endif
     }
 
     // check if data will be written in a valid address
     if ((flash_address < ((uint32_t)&__flash_app_start__))
         || ((flash_address + length_bytes) > ((uint32_t)&__flash_app_secondary_end__)))
     {
+#ifdef DEBUG_LOG
         printf("Flash write: failed\n");
+#endif
         return false;
     }
 
@@ -165,7 +173,9 @@ flash_driver_program(const uint8_t *p_src_ram, uint32_t flash_address, uint32_t 
         // Write data to flash
         if (HAL_FLASH_Program(FLASH_TYPEPROGRAM_BYTE, flash_address, (uint64_t)p_src_ram[i]) != HAL_OK)
         {
+#ifdef DEBUG_LOG
             printf("Flash program: failed\n");
+#endif
             flash_driver_write_disable();
             return false;
         }

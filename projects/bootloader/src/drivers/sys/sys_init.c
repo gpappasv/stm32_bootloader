@@ -52,7 +52,9 @@ SystemClock_Config(void)
     RCC_OscInitStruct.PLL.PLLQ            = 7;
     if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
     {
+#ifdef DEBUG_LOG
         printf("Error initializing RCC\n");
+#endif
     }
     /** Initializes the CPU, AHB and APB buses clocks
      */
@@ -64,7 +66,9 @@ SystemClock_Config(void)
 
     if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_2) != HAL_OK)
     {
+#ifdef DEBUG_LOG
         printf("Error initializing RCC\n");
+#endif
     }
 }
 
@@ -88,7 +92,9 @@ sys_init(void)
 void
 sys_prepare_for_application(void)
 {
+#ifdef DEBUG_LOG
     printf("Deinitializing peripherals and preparing for application start\r\n");
+#endif
     // Deinitialize peripherals to their reset state
     HAL_RCC_DeInit();
     HAL_DeInit();

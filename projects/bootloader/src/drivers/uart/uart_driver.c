@@ -61,7 +61,9 @@ MX_USART2_UART_Init(void) // Change from MX_USART1_UART_Init to MX_USART2_UART_I
     huart2.Init.OverSampling = UART_OVERSAMPLING_8;
     if (HAL_UART_Init(&huart2) != HAL_OK)
     {
+#ifdef DEBUG_LOG
         printf("Error initializing uart\n");
+#endif
     }
     HAL_UART_Receive_IT(&huart2, uart_rx_buf, RX_CHUNK_SIZE_BYTES); // Start reception
 }

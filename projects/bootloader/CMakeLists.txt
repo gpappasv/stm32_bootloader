@@ -73,6 +73,7 @@ target_link_libraries(${EXECUTABLE} hal_drivers)
 
 # List of compiler defines, prefix with -D compiler option
 target_compile_definitions(${EXECUTABLE} PRIVATE
+        #-DDEBUG_LOG
         )
 
 # List of include directories
