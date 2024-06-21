@@ -1,6 +1,5 @@
 /**
  * @file flash_driver.c
- * @author George Pappas (pappasgeorge12@gmail.com)
  * @brief This source file is the low level flash driver layer.
  * @version 0.1
  * @date 2024-05-22

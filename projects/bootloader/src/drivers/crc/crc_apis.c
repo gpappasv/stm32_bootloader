@@ -1,6 +1,5 @@
 /**
  * @file crc_apis.c
- * @author George Pappas (pappasgeorge12@gmail.com)
  * @brief This source file is the higher level crc calculation layer, providing an API to the application.
  * @version 0.1
  * @date 2024-05-22

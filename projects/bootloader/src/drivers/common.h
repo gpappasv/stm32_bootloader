@@ -1,6 +1,5 @@
 /**
  * @file common.h
- * @author George Pappas (pappasgeorge12@gmail.com)
  * @brief This header file is a common header file for all drivers.
  * @version 0.1
  * @date 2024-05-30
