@@ -63,6 +63,7 @@ set(SRC_FILES
     ${GIT_ROOT_DIR}/projects/bootloader/src/drivers/flash/flash_driver.c
     ${GIT_ROOT_DIR}/projects/bootloader/src/drivers/flash/flash_apis.c
     ${GIT_ROOT_DIR}/projects/bootloader/src/drivers/mpu/mpu_driver.c
+    ${GIT_ROOT_DIR}/projects/bootloader/src/com_protocol/com_protocol.c
 )
 
 # Build the executable based on the source files
@@ -73,6 +74,7 @@ target_link_libraries(${EXECUTABLE} hal_drivers)
 
 # List of compiler defines, prefix with -D compiler option
 target_compile_definitions(${EXECUTABLE} PRIVATE
+        #-DDEBUG_LOG
         )
 
 # List of include directories

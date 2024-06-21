@@ -1,6 +1,5 @@
 /**
  * @file sys_init.c
- * @author George Pappas (pappasgeorge12@gmail.com)
  * @brief This source file is the low level system driver layer. Here will reside whatever is needed for the system to
  *        start (e.g. clock configurations)
  * @version 0.1
@@ -52,7 +51,9 @@ SystemClock_Config(void)
     RCC_OscInitStruct.PLL.PLLQ            = 7;
     if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
     {
+#ifdef DEBUG_LOG
         printf("Error initializing RCC\n");
+#endif
     }
     /** Initializes the CPU, AHB and APB buses clocks
      */
@@ -64,7 +65,9 @@ SystemClock_Config(void)
 
     if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_2) != HAL_OK)
     {
+#ifdef DEBUG_LOG
         printf("Error initializing RCC\n");
+#endif
     }
 }
 
@@ -88,7 +91,9 @@ sys_init(void)
 void
 sys_prepare_for_application(void)
 {
+#ifdef DEBUG_LOG
     printf("Deinitializing peripherals and preparing for application start\r\n");
+#endif
     // Deinitialize peripherals to their reset state
     HAL_RCC_DeInit();
     HAL_DeInit();

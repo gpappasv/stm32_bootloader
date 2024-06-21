@@ -1,6 +1,5 @@
 /**
  * @file flash_apis.h
- * @author George Pappas (pappasgeorge12@gmail.com)
  * @brief This source file provides the important flash apis to the bootloader code.
  * @version 0.1
  * @date 2024-05-22

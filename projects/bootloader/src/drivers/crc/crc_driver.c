@@ -1,6 +1,5 @@
 /**
  * @file crc_driver.c
- * @author George Pappas (pappasgeorge12@gmail.com)
  * @brief This source file is the low level crc driver layer.
  * @version 0.1
  * @date 2024-05-22
@@ -59,7 +58,9 @@ uint32_t
 crc_driver_calculate(uint32_t *data, uint32_t size)
 {
     uint32_t crc = 0;
+#ifdef DEBUG_LOG
     printf("Calculating CRC of %lu bytes from address %p to %p\r\n", size, data, data + size);
+#endif
     crc = compute_crc32((uint8_t *)data, size);
     return crc;
 }

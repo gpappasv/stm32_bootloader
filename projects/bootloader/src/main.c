@@ -127,7 +127,9 @@ boot_application(void)
     {
         // TODO: GPA: we can check here if the stack pointer is within valid RAM region
         // TODO: GPA: we can check here if the reset handler is a valid address, within the FLASH region
+#ifdef DEBUG_LOG
         printf("APP Start ...\r\n");
+#endif
         // jump to the application
         jump_address        = *(uint32_t *)(((uint32_t)&__flash_app_start__) + 4);
         jump_to_application = (bl_func_ptr)jump_address;
@@ -140,7 +142,9 @@ boot_application(void)
     else
     {
         // there is no application installed
+#ifdef DEBUG_LOG
         printf("No APP found\r\n");
+#endif
     }
 }
 
@@ -167,8 +171,9 @@ fsm_init_hdl(bl_fsm_ctx_s * const ctx)
     // Initialize the system
     sys_init();
     uart_driver_init();
+#ifdef DEBUG_LOG
     printf(" --- BOOTLOADER Start --- \r\n");
-
+#endif
     // TODO: GPA: we need to check if button is pressed or if there is a newer version in the backup region
     // Button has always higher priority. If pressed, the init handler returnes and bootloader enters recovery mode.
     if (/*button is pressed*/ 0)
@@ -207,7 +212,9 @@ fsm_crc_check_hdl(bl_fsm_ctx_s * const ctx)
     // First handle the case where an image of newer version is found in the backup/seconday region.
     if (ctx->newer_ver_on_backup)
     {
+#ifdef DEBUG_LOG
         printf("Checking CRC of backup slot (newer version found)\r\n");
+#endif
         is_crc_ok = crc_api_check_secondary_app();
         if (is_crc_ok)
         {
@@ -224,7 +231,9 @@ fsm_crc_check_hdl(bl_fsm_ctx_s * const ctx)
     // First check if we need to recover the primary image.
     if (!ctx->recover_main_img)
     {
+#ifdef DEBUG_LOG
         printf("Checking CRC of main application \r\n");
+#endif
         is_crc_ok = crc_api_check_primary_app();
         if (is_crc_ok)
         {
@@ -238,7 +247,9 @@ fsm_crc_check_hdl(bl_fsm_ctx_s * const ctx)
     }
 
     // Then check if we need to recover the main image, from the secondary image.
+#ifdef DEBUG_LOG
     printf("Checking CRC of secondary image\r\n");
+#endif
     is_crc_ok = crc_api_check_secondary_app();
     if (is_crc_ok)
     {
@@ -270,7 +281,9 @@ fsm_auth_hdl(bl_fsm_ctx_s * const ctx)
     // First handle the case where an image of newer version is found in the backup/seconday region.
     if (ctx->newer_ver_on_backup)
     {
+#ifdef DEBUG_LOG
         printf("Checking AUTH for secondary slot (newer version found)");
+#endif
         // Either the auth step will succeed or fail for the newer version in the backup region.
         // Either way, the bootloader will not re-try to boot the newer version, if the first try fails.
         ctx->newer_ver_on_backup = false;
@@ -297,7 +310,9 @@ fsm_auth_hdl(bl_fsm_ctx_s * const ctx)
     // First check if we need to recover the primary image.
     if (ctx->recover_main_img)
     {
+#ifdef DEBUG_LOG
         printf("Checking AUTH for secondary image slot\r\n");
+#endif
         ctx->recover_main_img = false;
         // Check the auth of the secondary image.
         if (/*authentication check of secondary is ok*/ 1)
@@ -317,8 +332,9 @@ fsm_auth_hdl(bl_fsm_ctx_s * const ctx)
         // If authentication failed, mark the check as failed.
         return BL_FSM_ERR_OR_NONE_EVT;
     }
-
+#ifdef DEBUG_LOG
     printf("Checking AUTH for primary image slot\r\n");
+#endif
     // Then check if primary image is ok.
     if (/*authentication check of primary is ok*/ 1)
     {
@@ -347,9 +363,9 @@ fsm_boot_app_hdl(bl_fsm_ctx_s * const ctx)
         return -1;
     }
     ctx->curr_state = BL_FSM_BOOT_APP_STATE;
-
+#ifdef DEBUG_LOG
     printf("Booting application...\r\n");
-
+#endif
     boot_application();
     return BL_FSM_ERR_OR_NONE_EVT; // Boot process finished, loop back if needed.
 }
@@ -367,20 +383,13 @@ fsm_bootloop_hdl(bl_fsm_ctx_s * const ctx)
         return -1;
     }
     ctx->curr_state = BL_FSM_BOOTLOOP_STATE;
-
+#ifdef DEBUG_LOG
     printf("Bootloader loop...\r\n");
-
+#endif
     // TODO: GPA: we need to enable the uart communication here for serial dfu support
     sys_delay_ms(1000);
     return BL_FSM_ERR_OR_NONE_EVT; // Stay in bootloop
 }
-
-/**
- * @brief State handler for fsm error. This handler will be triggered when a faulty transition has happened. For now,
- *        this handler just logs (prints) the transition that led to this error state and then enter a while (1)
- * 
- * @return int 
- */
 
 // --- function definitions --------------------------------------------------------------------------------------------
 int
@@ -397,14 +406,17 @@ main(void)
         if (curr_state >= BL_FSM_STATE_COUNT || evt >= BL_FSM_EVT_COUNT || bl_fsm_map[curr_state][evt] == NULL)
         {
             // Invalid state
+#ifdef DEBUG_LOG
             printf("Current state: %d - event: %d\r\n", curr_state, evt);
+#endif
             break;
         }
 
         // Execute the state handler
         evt = bl_fsm_map[curr_state][evt](&fsm_ctx);
     }
-
+#ifdef DEBUG_LOG
     printf("Bootloader: fatal error... Terminating.");
+#endif
     return 0;
 }

@@ -5,7 +5,7 @@
         {
             "name": "Cortex Debug",
             "cwd": "${workspaceFolder}",
-            "executable": "${workspaceFolder}/build/bootloader/cmake/bootloader.elf",
+            "executable": "${workspaceFolder}/projects/bootloader/build/bootloader.elf",
             "request": "launch",
             "type": "cortex-debug",
             "runToEntryPoint": "main",

@@ -1,6 +1,5 @@
 /**
  * @file flash_apis.c
- * @author George Pappas (pappasgeorge12@gmail.com)
  * @brief This source file provides the important flash apis to the bootloader code.
  * @version 0.1
  * @date 2024-05-22
@@ -37,7 +36,9 @@ flash_api_erase_primary_space(void)
     ret = flash_driver_erase(((uint32_t)&__flash_app_start__), ((uint32_t)&__flash_app_end__));
     if (!ret)
     {
+#ifdef DEBUG_LOG
         printf("Error while erasing app primary flash data\r\n");
+#endif
     }
 
     return ret;
@@ -58,7 +59,9 @@ flash_api_erase_secondary_space(void)
 
     if (!ret)
     {
+#ifdef DEBUG_LOG
         printf("Error while erasing app secondary flash data\n");
+#endif
     }
     return ret;
 }
@@ -82,12 +85,15 @@ flash_api_transfer_secondary_to_primary(void)
 
     uint32_t primary_start_addr     = ((uint32_t)&__flash_app_start__);
     uint32_t primary_img_size_bytes = ((uint32_t)&__flash_app_end__) - ((uint32_t)&__flash_app_start__) + 1;
-
+#ifdef DEBUG_LOG
     printf("Attempt to transfer secondary to primary...\r\n");
+#endif
     // Just make sure that primary img size is equal to secondary img size
     if (primary_img_size_bytes != secondary_img_size_bytes)
     {
+#ifdef DEBUG_LOG
         printf("Primary img size != secondary img size: check configuration\n");
+#endif
         return false;
     }
 
@@ -96,14 +102,18 @@ flash_api_transfer_secondary_to_primary(void)
     ret = flash_api_erase_primary_space();
     if (!ret)
     {
+#ifdef DEBUG_LOG
         printf("Error while erasing app primary space\r\n");
+#endif
         return false;
     }
 
     bool rv = flash_driver_program((uint8_t *)secondary_start_addr, primary_start_addr, secondary_img_size_bytes);
     if (rv == false)
     {
+#ifdef DEBUG_LOG
         printf("Failed while transfering secondary slot to primary...\r\n");
+#endif
         __enable_irq();
         return false;
     }

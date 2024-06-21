@@ -4,10 +4,10 @@
 #include <string.h>
 #include <stdbool.h>
 UART_HandleTypeDef huart1;
-extern uint32_t __flash_app_start__;
-extern uint32_t __flash_app_end__;
-extern uint32_t __flash_app_secondary_start__;
-extern uint32_t __flash_app_secondary_end__;
+extern uint32_t    __flash_app_start__;
+extern uint32_t    __flash_app_end__;
+extern uint32_t    __flash_app_secondary_start__;
+extern uint32_t    __flash_app_secondary_end__;
 
 extern uint32_t __header_size_bytes__;
 extern uint32_t __header_crc_size_bytes__;
@@ -188,8 +188,8 @@ main(void)
         // // Read flash memory address content on 0x08000000
         uint8_t flash_data[10];
         flash_driver_read(flash_data, (uint8_t *)0x08000000, 10);
-        //flash_driver_program((uint8_t *)"Hello", 0x08000000, 5);
-        // Delay for a short period
+        // flash_driver_program((uint8_t *)"Hello", 0x08000000, 5);
+        //  Delay for a short period
         HAL_Delay(1000); // Delay for 1 second
     }
 }
