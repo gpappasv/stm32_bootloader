@@ -375,13 +375,6 @@ fsm_bootloop_hdl(bl_fsm_ctx_s * const ctx)
     return BL_FSM_ERR_OR_NONE_EVT; // Stay in bootloop
 }
 
-/**
- * @brief State handler for fsm error. This handler will be triggered when a faulty transition has happened. For now,
- *        this handler just logs (prints) the transition that led to this error state and then enter a while (1)
- * 
- * @return int 
- */
-
 // --- function definitions --------------------------------------------------------------------------------------------
 int
 main(void)
