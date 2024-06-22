@@ -15,6 +15,7 @@
 #include <stdint.h>
 
 // --- function declarations -------------------------------------------------------------------------------------------
-uint32_t crc_driver_calculate(uint32_t *data, uint32_t size);
+uint32_t crc32_driver_calculate(uint8_t const *data, uint32_t size);
+uint16_t crc16_driver_calculate(uint8_t const *data, uint32_t size);
 
 #endif // CRC_DRIVER_H

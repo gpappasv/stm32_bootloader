@@ -29,7 +29,7 @@ bool
 crc_api_check_primary_app(void)
 {
     // Calculate the CRC of the primary application
-    uint32_t crc = crc_driver_calculate((uint32_t *)((uint32_t)&__flash_app_start__),
+    uint32_t crc = crc32_driver_calculate((uint8_t *)((uint32_t)&__flash_app_start__),
                                         ((uint32_t)&__flash_app_end__) - ((uint32_t)&__flash_app_start__)
                                             - ((uint32_t)&__header_size_bytes__) + 1);
 
@@ -60,7 +60,7 @@ crc_api_check_secondary_app(void)
 {
     // Calculate the CRC of the secondary application
     uint32_t crc
-        = crc_driver_calculate((uint32_t *)((uint32_t)&__flash_app_secondary_start__),
+        = crc32_driver_calculate((uint8_t *)((uint32_t)&__flash_app_secondary_start__),
                                ((uint32_t)&__flash_app_secondary_end__) - ((uint32_t)&__flash_app_secondary_start__)
                                    - ((uint32_t)&__header_size_bytes__) + 1);
 

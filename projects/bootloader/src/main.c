@@ -20,7 +20,8 @@
 #include "crc_apis.h"
 #include "crc_driver.h"
 #include "flash_apis.h"
-#include "drivers/common.h"
+#include "common.h"
+#include "com_protocol.h"
 
 // --- typedefs --------------------------------------------------------------------------------------------------------
 /**
@@ -170,9 +171,12 @@ fsm_init_hdl(bl_fsm_ctx_s * const ctx)
 
     // Initialize the system
     sys_init();
+    // Init the uart peripheral
     uart_driver_init();
+    // Initialize the com protocol
+    com_protocol_init();
 #ifdef DEBUG_LOG
-    printf(" --- BOOTLOADER Start --- \r\n");
+        printf(" --- BOOTLOADER Start --- \r\n");
 #endif
     // TODO: GPA: we need to check if button is pressed or if there is a newer version in the backup region
     // Button has always higher priority. If pressed, the init handler returnes and bootloader enters recovery mode.
