@@ -55,6 +55,7 @@ set(SRC_FILES
     ${GIT_ROOT_DIR}/projects/bootloader/boards/stm32f401re/startup_stm32f401xe.s
     # --- Actual application ---
     ${GIT_ROOT_DIR}/projects/bootloader/src/main.c
+    ${GIT_ROOT_DIR}/projects/bootloader/src/drivers/user_input.c
     ${GIT_ROOT_DIR}/projects/bootloader/src/drivers/sys/sys_init.c
     ${GIT_ROOT_DIR}/projects/bootloader/src/drivers/sys/sys.c
     ${GIT_ROOT_DIR}/projects/bootloader/src/drivers/uart/uart_driver.c
@@ -103,7 +104,7 @@ target_compile_options(${EXECUTABLE} PRIVATE
         -ffunction-sections
         -fstack-usage
         # Optimise for size
-        #-Os
+        -Os
         )
 
 get_target_property(COMPILE_OPTIONS ${EXECUTABLE} COMPILE_OPTIONS)

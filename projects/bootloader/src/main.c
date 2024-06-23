@@ -22,6 +22,7 @@
 #include "flash_apis.h"
 #include "common.h"
 #include "com_protocol.h"
+#include "user_input.h"
 
 // --- typedefs --------------------------------------------------------------------------------------------------------
 /**
@@ -62,12 +63,8 @@ typedef struct bl_fsm_ctx_t
     bl_fsm_evts_e   evt_produced : 3;
 
     // Status flags
-    uint8_t is_button_pressed : 1;
     uint8_t newer_ver_on_backup : 1;
     uint8_t recover_main_img : 1;
-
-    // Unused bits
-    uint8_t unused : 7;
 } bl_fsm_ctx_s;
 
 /**
@@ -93,10 +90,10 @@ static bl_fsm_evts_e fsm_bootloop_hdl(bl_fsm_ctx_s * const ctx);
  * E.g. At first, the (current_state == BL_FSM_NONE_STATE and the hdl_output(evt) == BL_FSM_NONE_STATE) -> fsm_init_hdl will be executed.
  *      The fsm_init_hdl, will set the current_state == BL_FSM_INIT_STATE and if (for example) hdl_output(evt) ==  BL_FSM_ERR_OR_NONE_EVT,
  *      -> fsm_crc_check_hdl will be called on the next state machine cycle.
- * 
+ *
  * The purpose of this fsm is to follow a path, from the init (boot) phase to either booting the application, or entering the recovery
  * mode.
- * 
+ *
  */
 static const bl_fsm_handler bl_fsm_map[BL_FSM_STATE_COUNT][BL_FSM_EVT_COUNT] = {
                                /* | BL_FSM_ERR_OR_NONE_EVT | BL_FSM_CHECK_PASS_EVT | BL_FSM_CHECK_FAIL_EVT | BL_FSM_BUTTON_PRESSED_EVT */
@@ -178,15 +175,13 @@ fsm_init_hdl(bl_fsm_ctx_s * const ctx)
 #ifdef DEBUG_LOG
         printf(" --- BOOTLOADER Start --- \r\n");
 #endif
-    // TODO: GPA: we need to check if button is pressed or if there is a newer version in the backup region
-    // Button has always higher priority. If pressed, the init handler returnes and bootloader enters recovery mode.
-    if (/*button is pressed*/ 0)
+
+    if (user_input_is_pressed())
     {
-        ctx->is_button_pressed = true;
         return BL_FSM_BUTTON_PRESSED_EVT;
     }
 
-    if (/*newer version in backup*/ 0)
+    if (flash_api_is_secondary_newer())
     {
         ctx->newer_ver_on_backup = true;
     }

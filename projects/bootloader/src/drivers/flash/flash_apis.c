@@ -123,7 +123,8 @@ flash_api_erase_secondary_space(void)
 /**
  * @brief Function to write a firmware packet to the secondary space. Will be used by the firmware update process.
  *        NOTE: it is a responsibility of the caller to make sure that starting address offset is correct.
- *        This function will receive an offset and write the packet data to that offset, starting from the secondary space.
+ *        This function will receive an offset and write the packet data to that offset, starting from the secondary
+ * space.
  *
  * @param packet_data Pointer to the packet data
  * @param packet_size Size of the packet data
@@ -155,4 +156,49 @@ flash_api_write_firmware_update_packet(uint8_t *packet_data, uint32_t packet_siz
     }
 
     return ret;
+}
+
+/**
+ * @brief Function that compares the primary and secondary firmware versions and returns true if the secondary is newer.
+ *
+ * @return true if the secondary firmware is newer, false otherwise.
+ */
+bool
+flash_api_is_secondary_newer(void)
+{
+    // Get the primary and secondary firmware versions
+    uint8_t  primary_version_major = *((uint8_t *)(&__header_app_fw_version_start__));
+    uint16_t primary_version_minor = *((uint16_t *)(&__header_app_fw_version_start__) + 1);
+    uint8_t  primary_version_patch = *((uint8_t *)(&__header_app_fw_version_start__) + 3);
+
+    uint8_t  secondary_version_major = *((uint8_t *)(&__header_app_secondary_fw_version_start__));
+    uint16_t secondary_version_minor = *((uint16_t *)(&__header_app_secondary_fw_version_start__) + 1);
+    uint8_t  secondary_version_patch = *((uint8_t *)(&__header_app_secondary_fw_version_start__) + 3);
+#ifdef DEBUG_LOG
+    printf("Primary version: %d.%d.%d\r\n", primary_version_major, primary_version_minor, primary_version_patch);
+    printf(
+        "Secondary version: %d.%d.%d\r\n", secondary_version_major, secondary_version_minor, secondary_version_patch);
+#endif
+
+    // Compare the versions
+    if (secondary_version_major > primary_version_major)
+    {
+        return true;
+    }
+    else if (secondary_version_major == primary_version_major)
+    {
+        if (secondary_version_minor > primary_version_minor)
+        {
+            return true;
+        }
+        else if (secondary_version_minor == primary_version_minor)
+        {
+            if (secondary_version_patch > primary_version_patch)
+            {
+                return true;
+            }
+        }
+    }
+
+    return false;
 }
