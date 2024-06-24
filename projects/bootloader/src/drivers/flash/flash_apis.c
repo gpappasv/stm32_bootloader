@@ -19,7 +19,6 @@
 
 // --- static function declarations ------------------------------------------------------------------------------------
 static bool flash_api_erase_primary_space(void);
-static bool flash_api_erase_secondary_space(void);
 
 // --- static function definitions -------------------------------------------------------------------------------------
 /**
@@ -41,28 +40,6 @@ flash_api_erase_primary_space(void)
 #endif
     }
 
-    return ret;
-}
-
-/**
- * @brief Function to erase the flash space that the app secondary resides in.
- *
- * @return true
- * @return false
- */
-static bool
-flash_api_erase_secondary_space(void)
-{
-    bool ret = true;
-    // Erase the selected sectors
-    ret = flash_driver_erase(((uint32_t)&__flash_app_secondary_start__), ((uint32_t)&__flash_app_secondary_end__));
-
-    if (!ret)
-    {
-#ifdef DEBUG_LOG
-        printf("Error while erasing app secondary flash data\n");
-#endif
-    }
     return ret;
 }
 
@@ -119,4 +96,109 @@ flash_api_transfer_secondary_to_primary(void)
     }
     __enable_irq();
     return true;
+}
+
+/**
+ * @brief Function to erase the flash space that the app secondary resides in.
+ *
+ * @return true
+ * @return false
+ */
+bool
+flash_api_erase_secondary_space(void)
+{
+    bool ret = true;
+    // Erase the selected sectors
+    ret = flash_driver_erase(((uint32_t)&__flash_app_secondary_start__), ((uint32_t)&__flash_app_secondary_end__));
+
+    if (!ret)
+    {
+#ifdef DEBUG_LOG
+        printf("Error while erasing app secondary flash data\n");
+#endif
+    }
+    return ret;
+}
+
+/**
+ * @brief Function to write a firmware packet to the secondary space. Will be used by the firmware update process.
+ *        NOTE: it is a responsibility of the caller to make sure that starting address offset is correct.
+ *        This function will receive an offset and write the packet data to that offset, starting from the secondary
+ * space.
+ *
+ * @param packet_data Pointer to the packet data
+ * @param packet_size Size of the packet data
+ * @param addr_offset Offset in the secondary space where the packet data should be written
+ *
+ */
+bool
+flash_api_write_firmware_update_packet(uint8_t *packet_data, uint32_t packet_size, uint32_t addr_offset)
+{
+    bool ret = true;
+    // Create the flash address
+    uint32_t flash_addr_offset = ((uint32_t)&__flash_app_secondary_start__) + addr_offset;
+    // Check if the packet is to be written within the secondary space
+    if ((flash_addr_offset + packet_size - 1) > ((uint32_t)&__flash_app_secondary_end__))
+    {
+#ifdef DEBUG_LOG
+        printf("Error: Packet size exceeds secondary space\r\n");
+#endif
+        return false;
+    }
+
+    // Then write the packet data to the secondary space
+    ret = flash_driver_program(packet_data, flash_addr_offset, packet_size);
+    if (!ret)
+    {
+#ifdef DEBUG_LOG
+        printf("Error while writing firmware update packet to flash\r\n");
+#endif
+    }
+
+    return ret;
+}
+
+/**
+ * @brief Function that compares the primary and secondary firmware versions and returns true if the secondary is newer.
+ *
+ * @return true if the secondary firmware is newer, false otherwise.
+ */
+bool
+flash_api_is_secondary_newer(void)
+{
+    // Get the primary and secondary firmware versions
+    uint8_t  primary_version_major = *((uint8_t *)(&__header_app_fw_version_start__));
+    uint16_t primary_version_minor = *((uint16_t *)(&__header_app_fw_version_start__) + 1);
+    uint8_t  primary_version_patch = *((uint8_t *)(&__header_app_fw_version_start__) + 3);
+
+    uint8_t  secondary_version_major = *((uint8_t *)(&__header_app_secondary_fw_version_start__));
+    uint16_t secondary_version_minor = *((uint16_t *)(&__header_app_secondary_fw_version_start__) + 1);
+    uint8_t  secondary_version_patch = *((uint8_t *)(&__header_app_secondary_fw_version_start__) + 3);
+#ifdef DEBUG_LOG
+    printf("Primary version: %d.%d.%d\r\n", primary_version_major, primary_version_minor, primary_version_patch);
+    printf(
+        "Secondary version: %d.%d.%d\r\n", secondary_version_major, secondary_version_minor, secondary_version_patch);
+#endif
+
+    // Compare the versions
+    if (secondary_version_major > primary_version_major)
+    {
+        return true;
+    }
+    else if (secondary_version_major == primary_version_major)
+    {
+        if (secondary_version_minor > primary_version_minor)
+        {
+            return true;
+        }
+        else if (secondary_version_minor == primary_version_minor)
+        {
+            if (secondary_version_patch > primary_version_patch)
+            {
+                return true;
+            }
+        }
+    }
+
+    return false;
 }

@@ -55,6 +55,7 @@ set(SRC_FILES
     ${GIT_ROOT_DIR}/projects/bootloader/boards/stm32f401re/startup_stm32f401xe.s
     # --- Actual application ---
     ${GIT_ROOT_DIR}/projects/bootloader/src/main.c
+    ${GIT_ROOT_DIR}/projects/bootloader/src/drivers/user_input.c
     ${GIT_ROOT_DIR}/projects/bootloader/src/drivers/sys/sys_init.c
     ${GIT_ROOT_DIR}/projects/bootloader/src/drivers/sys/sys.c
     ${GIT_ROOT_DIR}/projects/bootloader/src/drivers/uart/uart_driver.c
@@ -64,6 +65,7 @@ set(SRC_FILES
     ${GIT_ROOT_DIR}/projects/bootloader/src/drivers/flash/flash_apis.c
     ${GIT_ROOT_DIR}/projects/bootloader/src/drivers/mpu/mpu_driver.c
     ${GIT_ROOT_DIR}/projects/bootloader/src/com_protocol/com_protocol.c
+    ${GIT_ROOT_DIR}/projects/bootloader/src/firmware_update/firmware_update.c
 )
 
 # Build the executable based on the source files
@@ -87,6 +89,8 @@ target_include_directories(${EXECUTABLE} PRIVATE
         ${GIT_ROOT_DIR}/projects/bootloader/src/drivers/sys
         ${GIT_ROOT_DIR}/projects/bootloader/src/drivers/mpu
         ${GIT_ROOT_DIR}/projects/bootloader/src/drivers
+        ${GIT_ROOT_DIR}/projects/bootloader/src/com_protocol
+        ${GIT_ROOT_DIR}/projects/bootloader/src/firmware_update
         )
 
 # Compiler options
@@ -99,7 +103,8 @@ target_compile_options(${EXECUTABLE} PRIVATE
         -fdata-sections
         -ffunction-sections
         -fstack-usage
-        ${DEBUG_COMPILER_OPTIONS}
+        # Optimise for size
+        -Os
         )
 
 get_target_property(COMPILE_OPTIONS ${EXECUTABLE} COMPILE_OPTIONS)

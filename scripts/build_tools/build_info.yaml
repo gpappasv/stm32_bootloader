@@ -22,7 +22,7 @@ projects:
       linker_script: "projects/app/boards/stm32f401re/STM32F401RETx_FLASH.ld"
       version:
         major: 1
-        minor: 1
+        minor: 2
         patch: 0
   - project_name: "bootloader"
     build_all: true

@@ -12,14 +12,17 @@
 #include "uart_driver.h"
 
 #include <stdio.h>
+#include <stdint.h>
 #include "stm32f4xx_hal.h"
 #include "sys_init.h"
 
-// --- defines ---------------------------------------------------------------------------------------------------------
-#define RX_CHUNK_SIZE_BYTES 256
-
 // --- static variable definitions -------------------------------------------------------------------------------------
-uint8_t uart_rx_buf[RX_CHUNK_SIZE_BYTES];
+// This is the structure that will store the received buffer and the size of it. This will be used by the upper layers
+// to receive the data.
+static struct uart_driver_data_s uart_buf = { .data_buffer = { 0 }, .len = RX_CHUNK_SIZE_BYTES };
+
+static process_rx_data data_rx_cb = NULL;
+
 // --- variable definitions --------------------------------------------------------------------------------------------
 UART_HandleTypeDef huart2;
 
@@ -64,8 +67,9 @@ MX_USART2_UART_Init(void) // Change from MX_USART1_UART_Init to MX_USART2_UART_I
         printf("Error initializing uart\n");
 #endif
     }
-    HAL_UART_Receive_IT(&huart2, uart_rx_buf, RX_CHUNK_SIZE_BYTES); // Start reception
+    HAL_UART_Receive_IT(&huart2, uart_buf.data_buffer, uart_buf.len); // Start reception
 }
+
 // --- function definitions --------------------------------------------------------------------------------------------
 /**
  * @brief Function to forward the printf output to the uart peripheral.
@@ -99,9 +103,14 @@ HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
     if (huart->Instance == USART2)
     {
+        // Call the register callback function if it is set
+        if (data_rx_cb != NULL)
+        {
+            data_rx_cb(&uart_buf);
+        }
         // Handle received data
         // TODO: GPA: At this point handle the received data and restart the receptions
-        HAL_UART_Receive_IT(&huart2, uart_rx_buf, RX_CHUNK_SIZE_BYTES);
+        HAL_UART_Receive_IT(&huart2, uart_buf.data_buffer, uart_buf.len);
     }
 }
 
@@ -116,7 +125,7 @@ HAL_UART_ErrorCallback(UART_HandleTypeDef *huart)
     if (huart->Instance == USART2)
     {
         // TODO: GPA: Handle the possible errors and restart the reception
-        HAL_UART_Receive_IT(&huart2, uart_rx_buf, RX_CHUNK_SIZE_BYTES);
+        HAL_UART_Receive_IT(&huart2, uart_buf.data_buffer, uart_buf.len);
     }
 }
 
@@ -128,4 +137,28 @@ void
 uart_driver_init(void)
 {
     MX_USART2_UART_Init();
+}
+
+/**
+ * @brief Function to register an rx callback function. This will be used by the com_protocol to register a callback
+ *        function and process the received message.
+ *
+ */
+void
+uart_driver_register_rx_callback(process_rx_data rx_cb)
+{
+    data_rx_cb = rx_cb;
+}
+
+/**
+ * @brief Function to transmit a buffer of data via UART.
+ *
+ * @param buffer The data buffer to be transmitted.
+ * @param length The length of the data buffer.
+ * @return none.
+ */
+void
+uart_tx_data(uint8_t *buffer, uint16_t length)
+{
+    HAL_UART_Transmit(&huart2, buffer, length, HAL_MAX_DELAY);
 }

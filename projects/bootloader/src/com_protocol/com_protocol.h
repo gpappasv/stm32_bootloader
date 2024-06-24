@@ -14,14 +14,13 @@
 #include <stddef.h>
 
 // --- defines ---------------------------------------------------------------------------------------------------------
-// TODO: GPA: this must be used also on uart rx somehow.
-#define COM_PROTO_CHUNK_SIZE 256
+#define FIRMWARE_UPDATE_PACKET_SIZE 128
 
 // --- enums -----------------------------------------------------------------------------------------------------------
 // clang-format off
 /**
  * @brief Com protocol operation results. Will be the response to message type COM_PROTO_MSG_TYPE_OP_RESULT
- * 
+ *
  */
 enum com_protocol_op_results_e {
     COM_PROTO_OP_RESULT_NO_ERR          = 0x00,
@@ -33,7 +32,7 @@ enum com_protocol_op_results_e {
 
 /**
  * @brief Com protocol data types. COM_PROTO_MSG_TYPE_REQ_DATA / COM_PROTO_MSG_TYPE_DATA
- * 
+ *
  */
 enum com_protocol_data_types_e {
     COM_PROTO_DATA_TYPE_DEBUG_INF = 0xD0, /* Data type: debug statistics */
@@ -41,7 +40,7 @@ enum com_protocol_data_types_e {
 
 /**
  * @brief Com protocol command types (COM_PROTO_MSG_TYPE_CMD)
- * 
+ *
  */
 enum com_protocol_cmd_types_e {
     COM_PROTO_CMD_CONFIRM_BACKUP_IMG  = 0xC0,
@@ -52,7 +51,7 @@ enum com_protocol_cmd_types_e {
 
 /**
  * @brief Com protocol msg types. NOTE: Keep incrementing this properly! This will index an array.
- * 
+ *
  */
 enum com_protocol_msg_types_e {
     /* None */
@@ -69,6 +68,7 @@ enum com_protocol_msg_types_e {
     COM_PROTO_MSG_TYPE_CMD         = 0x07, /* Message that will contain a command for the bootloader */
     /* Operation result */
     COM_PROTO_MSG_TYPE_OP_RESULT   = 0x08, /* Message that contains the operation result (error codes) */
+    COM_PROTO_MSG_TYPE_END         = 0x09, /* End of the message types */
 };
 // clang-format on
 
@@ -85,12 +85,11 @@ enum com_protocol_msg_types_e {
  */
 struct com_proto_msg_type_settings_s
 {
-    bool    is_encrypted;
+    uint8_t is_encrypted : 1;
+    uint8_t response_msg_type : 7;
     uint8_t enc_start_byte;
     uint8_t enc_end_byte;
-    uint8_t crc_end_byte;
-    uint8_t response_msg_type;
-};
+} __attribute__((packed));
 
 // TODO: GPA: pack the structures!!!
 /**
@@ -100,7 +99,7 @@ struct com_proto_msg_type_settings_s
 struct com_proto_msg_header_s
 {
     uint8_t type;
-    uint8_t len;
+    uint8_t len; // Message length can be at most 255 bytes
 } __attribute__((packed));
 
 /**
@@ -109,8 +108,7 @@ struct com_proto_msg_header_s
  */
 struct com_proto_msg_footer_s
 {
-    uint8_t auth;
-    uint8_t crc32;
+    uint16_t crc16;
 } __attribute__((packed));
 
 /**
@@ -130,7 +128,8 @@ struct com_proto_fwug_start_s
 struct com_proto_fwug_data_s
 {
     struct com_proto_msg_header_s msg_header;
-    uint8_t                       payload[128];
+    uint16_t                      packet_number; // This number is 0-based
+    uint8_t                       payload[FIRMWARE_UPDATE_PACKET_SIZE];
     struct com_proto_msg_footer_s msg_footer;
 } __attribute__((packed));
 
@@ -141,8 +140,9 @@ struct com_proto_fwug_data_s
 struct com_proto_fwug_status_s
 {
     struct com_proto_msg_header_s msg_header;
+    uint8_t                       op_result; // Same error code as in COM_PROTO_MSG_TYPE_OP_RESULT
     uint8_t                       is_active;
-    uint16_t                      packets_received;
+    uint16_t                      packets_received; // This number is 1-based
     struct com_proto_msg_footer_s msg_footer;
 } __attribute__((packed));
 
@@ -156,5 +156,17 @@ struct com_proto_fwug_cancel_s
     struct com_proto_msg_footer_s msg_footer;
 } __attribute__((packed));
 
+/**
+ * @brief Structure of COM_PROTO_MSG_TYPE_OP_RESULT
+ *
+ */
+struct com_proto_op_result_s
+{
+    struct com_proto_msg_header_s msg_header;
+    uint8_t                       op_result;
+    struct com_proto_msg_footer_s msg_footer;
+} __attribute__((packed));
+
 // --- function declarations -------------------------------------------------------------------------------------------
+void                                        com_protocol_init(void);
 const struct com_proto_msg_type_settings_s *get_msg_type_settings(enum com_protocol_msg_types_e msg_type);

@@ -113,6 +113,6 @@ sys_prepare_for_application(void)
     mpu_config_lock();
     // TODO: GPA: It is important to set the unprivileged mode after the MPU is enabled, to protect bootloader.
     // Right now, setting the unprivileged mode is commented out, because it will cause the bootloader to crash.
-    //set_unprivileged_mode();
+    // set_unprivileged_mode();
     __enable_irq();
 }
