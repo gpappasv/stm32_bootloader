@@ -157,7 +157,10 @@ class FirmwareUpdateFactory:
         print("FWUG_START Message:", start_msg)
         response = send_message_via_serial(start_msg, self.com_port, self.baud_rate, 5, 10)
         if not self.parse_fwug_response(response, packet_number):
-            print("Firmware update failed. Exiting...")
+            # If firmware update start failed, send a cancel message and return
+            cancel_msg = self.create_fwug_cancel_msg()
+            send_message_via_serial(cancel_msg, self.com_port, self.baud_rate)
+            print("Firmware update failed. Attempting to cancel... (and exiting)")
             return
         else:
             packet_number += 1

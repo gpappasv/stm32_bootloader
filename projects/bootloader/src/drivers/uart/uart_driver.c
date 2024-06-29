@@ -14,7 +14,11 @@
 #include <stdio.h>
 #include <stdint.h>
 #include "stm32f4xx_hal.h"
+#include "stm32f401xe.h" // stm32f401re
 #include "sys_init.h"
+
+// --- defines ---------------------------------------------------------------------------------------------------------
+#define TIM1_COUNTDOWN_SEC 15 // 15 seconds timeout for the uart reception watchdog
 
 // --- static variable definitions -------------------------------------------------------------------------------------
 // This is the structure that will store the received buffer and the size of it. This will be used by the upper layers
@@ -27,9 +31,43 @@ static process_rx_data data_rx_cb = NULL;
 UART_HandleTypeDef huart2;
 
 // --- static function declarations ------------------------------------------------------------------------------------
+static void uart_recv_it_init_wdg(void);
 static void MX_USART2_UART_Init(void);
 
 // --- static function definitions -------------------------------------------------------------------------------------
+/**
+ * @brief This function initializes the timer1 peripheral to be used as a watchdog for the uart reception.
+ *        TODO: GPA: We can set the timer to one-pulse mode, so that it will stop after the timeout. The timer can be
+ * re-enabled by the uart isr, only when needed.
+ *
+ */
+static void
+uart_recv_it_init_wdg(void)
+{
+    // Enable the TIM1 clock
+    RCC->APB2ENR |= RCC_APB2ENR_TIM1EN;
+
+    TIM1->SMCR = 0;
+    TIM1->DIER = TIM_DIER_UIE; // Enable update interrupt
+    TIM1->SR   = 0;            // Clear status register
+    TIM1->EGR  = TIM_EGR_UG;   // Generate an update event to reload the prescaler
+    // Configure the prescaler such is to generate 1ms ticks. The systemclock is 84mhz
+    TIM1->PSC = 21000 - 1; // this means 1ms -> 4000 ticks
+
+    // Set the auto-reload value for a 15-second countdown
+    TIM1->ARR = TIM1_COUNTDOWN_SEC * 4000 - 1;
+    TIM1->CNT = TIM1->ARR; // Set the counter to the auto-reload value
+    TIM1->CR2 = 0;
+    // CR1 config: URS = 1, DIR = 1, CEN = 1
+    TIM1->CR1 = (TIM_CR1_URS | TIM_CR1_DIR | TIM_CR1_CEN);
+
+    // Clear any pending update interrupt flags
+    TIM1->SR &= ~TIM_SR_UIF;
+    // Enable the update interrupt for TIM1 in NVIC
+    NVIC_SetPriority(TIM1_UP_TIM10_IRQn, 0); // Set interrupt priority
+    NVIC_EnableIRQ(TIM1_UP_TIM10_IRQn);
+}
+
 /**
  * @brief USART2 Initialization Function
  * @param None
@@ -68,6 +106,8 @@ MX_USART2_UART_Init(void) // Change from MX_USART1_UART_Init to MX_USART2_UART_I
 #endif
     }
     HAL_UART_Receive_IT(&huart2, uart_buf.data_buffer, uart_buf.len); // Start reception
+    // Init the uart watchdog
+    uart_recv_it_init_wdg();
 }
 
 // --- function definitions --------------------------------------------------------------------------------------------
@@ -124,7 +164,8 @@ HAL_UART_ErrorCallback(UART_HandleTypeDef *huart)
 {
     if (huart->Instance == USART2)
     {
-        // TODO: GPA: Handle the possible errors and restart the reception
+        HAL_UART_DeInit(&huart2);
+        HAL_UART_Init(&huart2);
         HAL_UART_Receive_IT(&huart2, uart_buf.data_buffer, uart_buf.len);
     }
 }
@@ -137,6 +178,31 @@ void
 uart_driver_init(void)
 {
     MX_USART2_UART_Init();
+}
+
+/**
+ * @brief Function to feed the uart watchdog. Will be called by the uart isr, every time something is being received.
+ *
+ */
+void
+uart_driver_feed_wdg(void)
+{
+    // Reset the uart wdg timer to not trigger the buffer reset.
+    TIM1->CNT = TIM1->ARR;
+}
+
+/**
+ * @brief Function to recover the uart reception.
+ *
+ */
+void
+uart_driver_rx_recover(void)
+{
+    HAL_UART_DeInit(&huart2);
+    HAL_UART_Init(&huart2);
+    // Restart the reception
+    HAL_UART_Receive_IT(&huart2, uart_buf.data_buffer, uart_buf.len);
+    printf("Recovering uart reception\r\n");
 }
 
 /**
