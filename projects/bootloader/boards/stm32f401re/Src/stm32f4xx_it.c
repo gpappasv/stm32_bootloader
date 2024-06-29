@@ -22,6 +22,8 @@
 #include "uart_driver.h"
 #include "stm32f4xx_hal.h"
 #include "stm32f4xx_it.h"
+#include "stm32f401xe.h"
+#include <stdio.h>
 
 /* External variables --------------------------------------------------------*/
 extern UART_HandleTypeDef huart2;
@@ -128,4 +130,15 @@ void
 USART2_IRQHandler(void)
 {
     HAL_UART_IRQHandler(&huart2);
+    uart_driver_feed_wdg();
+}
+
+void
+TIM1_UP_TIM10_IRQHandler(void)
+{
+    if (TIM1->SR & TIM_SR_UIF) // If update interrupt flag is set
+    {
+        TIM1->SR &= ~TIM_SR_UIF; // Clear the interrupt flag
+        uart_driver_rx_recover();
+    }
 }
