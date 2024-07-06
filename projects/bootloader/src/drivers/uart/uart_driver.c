@@ -164,9 +164,7 @@ HAL_UART_ErrorCallback(UART_HandleTypeDef *huart)
 {
     if (huart->Instance == USART2)
     {
-        HAL_UART_DeInit(&huart2);
-        HAL_UART_Init(&huart2);
-        HAL_UART_Receive_IT(&huart2, uart_buf.data_buffer, uart_buf.len);
+        uart_driver_rx_recover();
     }
 }
 
@@ -202,7 +200,6 @@ uart_driver_rx_recover(void)
     HAL_UART_Init(&huart2);
     // Restart the reception
     HAL_UART_Receive_IT(&huart2, uart_buf.data_buffer, uart_buf.len);
-    printf("Recovering uart reception\r\n");
 }
 
 /**

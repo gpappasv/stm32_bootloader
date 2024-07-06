@@ -104,7 +104,7 @@ target_compile_options(${EXECUTABLE} PRIVATE
         -ffunction-sections
         -fstack-usage
         # Optimise for size
-        -Os
+        #-Os
         )
 
 get_target_property(COMPILE_OPTIONS ${EXECUTABLE} COMPILE_OPTIONS)
