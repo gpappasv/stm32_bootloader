@@ -47,6 +47,7 @@ create_dfu_image() {
     local version_major=$3
     local version_minor=$4
     local version_patch=$5
+    local private_key_path=$6
 
     # Check if the Python script exists
     if [ ! -f "create_dfu_image.py" ]; then
@@ -56,12 +57,40 @@ create_dfu_image() {
 
     echo "Creating DFU image..."
     pwd
-    python create_dfu_image.py "$GIT_ROOT/$binary_path" "$GIT_ROOT/$linker_script" "$version_major" "$version_minor" "$version_patch"
+    python create_dfu_image.py "$GIT_ROOT/$binary_path" "$GIT_ROOT/$linker_script" "$version_major" "$version_minor" "$version_patch" "$GIT_ROOT/$private_key_path"
     #if python fails, try with python3
     if [ $? -ne 0 ]; then
-        python3 create_dfu_image.py "$GIT_ROOT/$binary_path" "$GIT_ROOT/$linker_script" "$version_major" "$version_minor" "$version_patch"
+        python3 create_dfu_image.py "$GIT_ROOT/$binary_path" "$GIT_ROOT/$linker_script" "$version_major" "$version_minor" "$version_patch" "$GIT_ROOT/$private_key_path"
     fi
     #TODO: GPA: don't fail the rest of the script if the python script fails.
+}
+
+# Function to run the extract_public_key.py script
+extract_public_key() {
+    local script_dir="$GIT_ROOT/scripts/build_tools"
+    if [ ! -d "$script_dir" ]; then
+        echo "Folder '$script_dir' does not exist."
+        return 1
+    fi
+
+    # Navigate to the script directory
+    cd "$script_dir" || return 1
+
+    local public_key_path=$1
+    local public_key_header_path=$2
+
+    # Check if the Python script exists
+    if [ ! -f "extract_public_key.py" ]; then
+        echo "Error: 'extract_public_key.py' script not found in '$script_dir'. Skipping public key extraction."
+        return 1
+    fi
+
+    echo "Extracting public key..."
+    python extract_public_key.py "$GIT_ROOT/$public_key_path" "$GIT_ROOT/$public_key_header_path"
+    #if python fails, try with python3
+    if [ $? -ne 0 ]; then
+        python3 extract_public_key.py "$GIT_ROOT/$public_key_path" "$GIT_ROOT/$public_key_header_path"
+    fi
 }
 
 # Check if a project name is provided as an argument
@@ -101,6 +130,21 @@ process_project() {
         return 1
     fi
 
+    # Check if public key extraction is enabled
+    public_key_enabled=$(yq e ".projects[] | select(.project_name == \"$project\") | .create_public_key.enabled" "$YAML_FILE")
+    if [ "$public_key_enabled" == "true" ]; then
+        public_key_path=$(yq e ".projects[] | select(.project_name == \"$project\") | .create_public_key.public_key_path" "$YAML_FILE")
+        public_key_header=$(yq e ".projects[] | select(.project_name == \"$project\") | .create_public_key.public_key_header" "$YAML_FILE")
+
+        echo "Extracting public key for project: $project"
+        extract_public_key "$public_key_path" "$public_key_header"
+        if [ $? -ne 0 ]; then
+            echo "Failed to extract public key for project '$project'. Continuing with the rest of the script..."
+        fi
+    else
+        echo "Public key extraction not enabled for project: $project"
+    fi
+
     echo "Building project: $project"
     build_project "$project"
     if [ $? -ne 0 ]; then
@@ -117,9 +161,10 @@ process_project() {
         version_major=$(yq e ".projects[] | select(.project_name == \"$project\") | .dfu_image.version.major" "$YAML_FILE")
         version_minor=$(yq e ".projects[] | select(.project_name == \"$project\") | .dfu_image.version.minor" "$YAML_FILE")
         version_patch=$(yq e ".projects[] | select(.project_name == \"$project\") | .dfu_image.version.patch" "$YAML_FILE")
+        private_key_path=$(yq e ".projects[] | select(.project_name == \"$project\") | .dfu_image.private_key_path" "$YAML_FILE")
 
         echo "Creating DFU image for project: $project"
-        create_dfu_image "$binary_path" "$linker_script" "$version_major" "$version_minor" "$version_patch"
+        create_dfu_image "$binary_path" "$linker_script" "$version_major" "$version_minor" "$version_patch" "$private_key_path"
         if [ $? -ne 0 ]; then
             echo "Failed to create DFU image for project '$project'. Continuing with the rest of the script..."
         fi

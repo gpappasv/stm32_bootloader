@@ -23,7 +23,8 @@
 // --- static variable definitions -------------------------------------------------------------------------------------
 // This is the structure that will store the received buffer and the size of it. This will be used by the upper layers
 // to receive the data.
-static struct uart_driver_data_s uart_buf = { .data_buffer = { 0 }, .len = RX_CHUNK_SIZE_BYTES };
+static uint8_t uart_rx_buffer[RX_CHUNK_SIZE_BYTES] = { 0 };
+static struct uart_driver_data_s uart_buf = { .data_buffer = uart_rx_buffer, .len = RX_CHUNK_SIZE_BYTES };
 
 static process_rx_data data_rx_cb = NULL;
 
@@ -112,63 +113,6 @@ MX_USART2_UART_Init(void) // Change from MX_USART1_UART_Init to MX_USART2_UART_I
 
 // --- function definitions --------------------------------------------------------------------------------------------
 /**
- * @brief Function to forward the printf output to the uart peripheral.
- *
- * @param file
- * @param ptr
- * @param len
- * @return int
- */
-int
-_write(int file, char *ptr, int len)
-{
-    (void)file;
-    int DataIdx;
-
-    for (DataIdx = 0; DataIdx < len; DataIdx++)
-    {
-        HAL_UART_Transmit(&huart2, (uint8_t *)ptr++, 1, 100);
-    }
-    return len;
-}
-
-/**
- * @brief Callback function that is being called automatically when the uart rx is finished. Processes the data and
- *        restarts the uart reception.
- *
- * @return int
- */
-void
-HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
-{
-    if (huart->Instance == USART2)
-    {
-        // Call the register callback function if it is set
-        if (data_rx_cb != NULL)
-        {
-            data_rx_cb(&uart_buf);
-        }
-        // Handle received data
-        // TODO: GPA: At this point handle the received data and restart the receptions
-        HAL_UART_Receive_IT(&huart2, uart_buf.data_buffer, uart_buf.len);
-    }
-}
-
-/**
- * @brief Error callback function, for uart errors
- *
- * @param huart
- */
-void
-HAL_UART_ErrorCallback(UART_HandleTypeDef *huart)
-{
-    if (huart->Instance == USART2)
-    {
-        uart_driver_rx_recover();
-    }
-}
-
-/**
  * @brief Function to initialize the uart peripheral, of the stm32f401re.
  *
  */
@@ -178,6 +122,31 @@ uart_driver_init(void)
     MX_USART2_UART_Init();
 }
 
+/**
+ * @brief Function to register an rx callback function. This will be used by the com_protocol to register a callback
+ *        function and process the received message.
+ *
+ */
+void
+uart_driver_register_rx_callback(process_rx_data rx_cb)
+{
+    data_rx_cb = rx_cb;
+}
+
+/**
+ * @brief Function to transmit a buffer of data via UART.
+ *
+ * @param buffer The data buffer to be transmitted.
+ * @param length The length of the data buffer.
+ * @return none.
+ */
+void
+uart_tx_data(uint8_t *buffer, uint16_t length)
+{
+    HAL_UART_Transmit(&huart2, buffer, length, HAL_MAX_DELAY);
+}
+
+// --- application specific functions ----------------------------------------------------------------------------------
 /**
  * @brief Function to feed the uart watchdog. Will be called by the uart isr, every time something is being received.
  *
@@ -203,25 +172,58 @@ uart_driver_rx_recover(void)
 }
 
 /**
- * @brief Function to register an rx callback function. This will be used by the com_protocol to register a callback
- *        function and process the received message.
+ * @brief Callback function that is being called automatically when the uart rx is finished. Processes the data and
+ *        restarts the uart reception.
  *
+ * @return int
  */
 void
-uart_driver_register_rx_callback(process_rx_data rx_cb)
+HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
-    data_rx_cb = rx_cb;
+    if (huart->Instance == USART2)
+    {
+        // Call the register callback function if it is set
+        if (data_rx_cb != NULL)
+        {
+            data_rx_cb(&uart_buf);
+        }
+        // Handle received data
+        // TODO: GPA: At this point handle the received data and restart the receptions
+        HAL_UART_Receive_IT(&huart2, uart_buf.data_buffer, uart_buf.len);
+    }
 }
 
 /**
- * @brief Function to transmit a buffer of data via UART.
+ * @brief Function to forward the printf output to the uart peripheral.
  *
- * @param buffer The data buffer to be transmitted.
- * @param length The length of the data buffer.
- * @return none.
+ * @param file
+ * @param ptr
+ * @param len
+ * @return int
+ */
+int
+_write(int file, char *ptr, int len)
+{
+    (void)file;
+    int DataIdx;
+
+    for (DataIdx = 0; DataIdx < len; DataIdx++)
+    {
+        HAL_UART_Transmit(&huart2, (uint8_t *)ptr++, 1, 100);
+    }
+    return len;
+}
+
+/**
+ * @brief Error callback function, for uart errors
+ *
+ * @param huart
  */
 void
-uart_tx_data(uint8_t *buffer, uint16_t length)
+HAL_UART_ErrorCallback(UART_HandleTypeDef *huart)
 {
-    HAL_UART_Transmit(&huart2, buffer, length, HAL_MAX_DELAY);
+    if (huart->Instance == USART2)
+    {
+        uart_driver_rx_recover();
+    }
 }

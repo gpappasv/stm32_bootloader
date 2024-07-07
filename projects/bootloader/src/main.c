@@ -23,6 +23,7 @@
 #include "common.h"
 #include "com_protocol.h"
 #include "user_input.h"
+#include "authentication.h"
 
 // --- typedefs --------------------------------------------------------------------------------------------------------
 /**
@@ -173,7 +174,7 @@ fsm_init_hdl(bl_fsm_ctx_s * const ctx)
     // Initialize the com protocol
     com_protocol_init();
 #ifdef DEBUG_LOG
-        printf(" --- BOOTLOADER Start --- \r\n");
+    printf(" --- BOOTLOADER Start --- \r\n");
 #endif
 
     if (user_input_is_pressed())
@@ -276,7 +277,17 @@ fsm_auth_hdl(bl_fsm_ctx_s * const ctx)
     }
     ctx->curr_state = BL_FSM_AUTH_STATE;
 
-    bool is_auth_ok = false;
+    uint32_t secondary_start_addr = ((uint32_t)&__flash_app_secondary_start__);
+    uint32_t secondary_img_size_bytes
+        = ((uint32_t)&__flash_app_secondary_end__) - ((uint32_t)&__flash_app_secondary_start__) + 1;
+
+    uint32_t primary_start_addr     = ((uint32_t)&__flash_app_start__);
+    uint32_t primary_img_size_bytes = ((uint32_t)&__flash_app_end__) - ((uint32_t)&__flash_app_start__) + 1;
+
+    uint32_t primary_signature_start_addr   = ((uint32_t)&__header_app_hash_start__);
+    uint32_t secondary_signature_start_addr = ((uint32_t)&__header_app_secondary_hash_start__);
+
+    uint32_t header_size_bytes = ((uint32_t)&__header_size_bytes__);
     // First handle the case where an image of newer version is found in the backup/seconday region.
     if (ctx->newer_ver_on_backup)
     {
@@ -287,7 +298,9 @@ fsm_auth_hdl(bl_fsm_ctx_s * const ctx)
         // Either way, the bootloader will not re-try to boot the newer version, if the first try fails.
         ctx->newer_ver_on_backup = false;
         // If newer version is found and auth is ok, mark the check as passed.
-        if (/*authentication is ok*/ 1)
+        if (authenticate_application(primary_start_addr,
+                                     primary_img_size_bytes - header_size_bytes,
+                                     (uint8_t *)primary_signature_start_addr))
         {
             // Newer version on backup + CRC ok + Auth ok = transfer the secondary to primary
             bool is_transfer_ok = flash_api_transfer_secondary_to_primary();
@@ -314,7 +327,9 @@ fsm_auth_hdl(bl_fsm_ctx_s * const ctx)
 #endif
         ctx->recover_main_img = false;
         // Check the auth of the secondary image.
-        if (/*authentication check of secondary is ok*/ 1)
+        if (authenticate_application(secondary_start_addr,
+                                     secondary_img_size_bytes - header_size_bytes,
+                                     (uint8_t *)secondary_signature_start_addr))
         {
             // If auth is ok, mark the check, first transfer the secondary to primary.
             bool is_transfer_ok = flash_api_transfer_secondary_to_primary();
@@ -335,7 +350,8 @@ fsm_auth_hdl(bl_fsm_ctx_s * const ctx)
     printf("Checking AUTH for primary image slot\r\n");
 #endif
     // Then check if primary image is ok.
-    if (/*authentication check of primary is ok*/ 1)
+    if (authenticate_application(
+            primary_start_addr, primary_img_size_bytes - header_size_bytes, (uint8_t *)primary_signature_start_addr))
     {
         // If auth is ok, mark the check as passed.
         return BL_FSM_CHECK_PASS_EVT;

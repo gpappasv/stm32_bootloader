@@ -1,5 +1,5 @@
 # Description of repository
-This is a repository that a custom stm32 bootloader is being developed.
+This is a repository that a custom lightweight stm32 bootloader is being developed.
 
 The bootloader is designed to have an easily portable core, by just replacing the driver layer, with the board specific one.
 The current implementation focuses on the STM32F401RE board.
@@ -14,11 +14,14 @@ The current implementation focuses on the STM32F401RE board.
 # Bootloader features
 - Adaptable application space.
 - Checksum verification, before booting the application.
-- Authentication of the application. (Secure boot)
+- Authentication of the application. (Secure boot). ECDSA is used.
 - Easy to port to other microcontrollers.
 - Recovery mode (firmware update support).
 - Backup image recovery. If the main application is broken, the secondary is tested.
 - Secure communication through the custom communication protocol.
+- Bootloader flash used: ~14.5kB
+
+NOTE: More in-depth documentation about how the bootloader works can be found under **docs**.
 
 # Configuration
 TODO.

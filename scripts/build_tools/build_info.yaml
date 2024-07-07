@@ -11,6 +11,7 @@
 #         major:
 #         minor:
 #         patch:
+#       private_key_path: 'the path/to/private_key, relative to the root of the repository' This is needed for the firmware update script to sign the binary
 #   - project_name: ......
 
 projects:
@@ -24,10 +25,17 @@ projects:
         major: 1
         minor: 2
         patch: 0
+      private_key_path: "projects/private_key.pem"
+    create_public_key:
+      enabled: false
   - project_name: "bootloader"
     build_all: true
     dfu_image:
       enabled: false
+    create_public_key:
+      enabled: true
+      public_key_path: "projects/public_key.pem"
+      public_key_header: "projects/bootloader/src/authentication/ecdsa_pub_key.h"
   - project_name: "another_project"
     build_all: false
     dfu_image:

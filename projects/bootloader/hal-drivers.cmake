@@ -42,7 +42,9 @@ target_compile_options(hal_drivers PRIVATE -Wno-unused-parameter -mthumb
         -Wextra
         -fdata-sections
         -ffunction-sections
-        -fstack-usage)
+        -fstack-usage
+        -Os
+        )
         
 target_link_options(hal_drivers PRIVATE
         -T${LINKER_FILE}

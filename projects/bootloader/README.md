@@ -28,3 +28,6 @@ is that, changing the implementations under src/drivers to be compatible with an
 of the bootloader smooth.
 
 TODO: GPA: provide a full bootloader architecture documentation when finished!
+
+# Steps to use the bootloader security features (authentication)
+
