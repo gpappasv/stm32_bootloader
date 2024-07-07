@@ -7,7 +7,7 @@
     The DFU Image Prefix is a 40-byte header that contains the following information:
     - CRC32 of the firmware image (4-bytes)
     - Firmware version (Major, Minor, Patch) (1-byte, 2-bytes, 1-byte)
-    - SHA256 of the firmware image (32-bytes)
+    - Signature of the firmware image (64-bytes)
 
     The header of the DFU image is used by the bootloader to verify the integrity of the firmware image.
     The header of the DFU image does not participate in the CRC and SHA256 calculation and is not included in the size
@@ -18,11 +18,14 @@ import sys
 import hashlib
 import os
 import yaml
+from cryptography.hazmat.primitives import hashes, serialization
+from cryptography.hazmat.primitives.asymmetric import ec
+from cryptography.hazmat.primitives.asymmetric.utils import Prehashed
 
 CRC_SIZE_BYTES     = 4
 VERSION_SIZE_BYTES = 4
-SHA256_SIZE_BYTES  = 32
-FOOTER_SIZE_BYTES = CRC_SIZE_BYTES + VERSION_SIZE_BYTES + SHA256_SIZE_BYTES
+SIGNATURE_SIZE_BYTES = 64  # Assuming ECDSA P-256 signature size
+FOOTER_SIZE_BYTES = CRC_SIZE_BYTES + VERSION_SIZE_BYTES + SIGNATURE_SIZE_BYTES
 
 class CRC:
     @staticmethod
@@ -47,7 +50,7 @@ class CRC:
         return crc ^ 0xFFFFFFFF
 
 class BinaryAnalyzer:
-    def __init__(self, binary_data, linker_script_content):
+    def __init__(self, binary_data, linker_script_content, private_key):
         """
         Initializes the BinaryAnalyzer with the given binary data and linker script content.
         Appends padding and an empty footer to the binary data.
@@ -58,9 +61,10 @@ class BinaryAnalyzer:
         """
         self.binary_data = binary_data
         self.linker_script_content = linker_script_content
-        self.footer_size = FOOTER_SIZE_BYTES  # Footer size includes CRC32, version (4 bytes)
+        self.footer_size = FOOTER_SIZE_BYTES  # Footer size includes CRC32, version (4 bytes) and signature (64 bytes)
         self.version = None
         self.crc32 = None
+        self.private_key = private_key
 
         # Perform padding and footer appending during initialization
         self._calculate_img_size()
@@ -148,13 +152,35 @@ class BinaryAnalyzer:
         self.binary_data[footer_start + 2] = version_minor & 0xFF
         self.binary_data[footer_start + 3] = version_patch
 
-    def add_sha256_to_footer(self):
+    def add_signature_to_footer(self):
         """
-        Adds the SHA256 hash to the footer of the binary data.
+        Adds the ECDSA signature to the footer of the binary data.
         """
-        sha256_hash = hashlib.sha256(self.binary_data[:-self.footer_size]).digest()
+        with open(self.private_key, "rb") as key_file:
+            private_key = serialization.load_pem_private_key(key_file.read(), password=None)
+
+        # Calculate SHA-256 hash of the binary data
+        digest = hashlib.sha256(self.binary_data[:-self.footer_size]).digest()
+        print(f"\nCalculating SHA-256 hash of the binary data: {digest.hex()} with len: {len(digest)} bytes")
+        signature_length = 0
+        # Sign the SHA-256 hash
+        while signature_length != 70:  # 70 bytes is the maximum length of an ECDSA P-256 signature that we support
+            try:
+                signature = private_key.sign(
+                    digest,
+                    ec.ECDSA(Prehashed(hashes.SHA256()))
+                )
+                signature_length = len(signature)
+            except:
+                raise ValueError("Error while signing the hash. Make sure the private key is correct.")
+
+        # Append the signature to the footer
         footer_start = len(self.binary_data) - self.footer_size + CRC_SIZE_BYTES + VERSION_SIZE_BYTES
-        self.binary_data[footer_start:footer_start + 32] = sha256_hash
+        print(f"\nSignature is: {signature.hex()} of len: {len(signature)} bytes")
+        # post process signature to only keep r and s parts (4 first bytes useless, then 32 bytes r, then 2 bytes useless, then 32 bytes s)
+        signature = signature[4:36] + signature[38:70]
+        print(f"\nAdding post processed signature to the footer: {signature.hex()} of len: {len(signature)} bytes")
+        self.binary_data[footer_start:footer_start + SIGNATURE_SIZE_BYTES] = signature
 
     def commit_to_file(self, file_path):
         """
@@ -187,8 +213,8 @@ class BinaryAnalyzer:
             yaml.dump(yaml_info, yaml_file, default_flow_style=False)
 
 def main():
-    if len(sys.argv) != 6:
-        print(f"Usage: {sys.argv[0]} <binary_file> <linker_script> <version_major> <version_minor> <version_patch>")
+    if len(sys.argv) != 7:
+        print(f"Usage: {sys.argv[0]} <binary_file> <linker_script> <version_major> <version_minor> <version_patch> <private_key>")
         sys.exit(1)
 
     binary_file_path = sys.argv[1]
@@ -196,6 +222,7 @@ def main():
     version_major = int(sys.argv[3])
     version_minor = int(sys.argv[4])
     version_patch = int(sys.argv[5])
+    private_key = sys.argv[6]
 
     try:
         with open(binary_file_path, "rb") as binary_file:
@@ -205,7 +232,7 @@ def main():
             linker_script_content = linker_file.read()
 
         # Initialize and analyze the binary provided based on the linker script
-        analyzer = BinaryAnalyzer(binary_data, linker_script_content)
+        analyzer = BinaryAnalyzer(binary_data, linker_script_content, private_key)
 
         # Calculate CRC32 on the initialized binary data
         crc32 = CRC.compute_crc32(analyzer.binary_data[:-FOOTER_SIZE_BYTES])  # Exclude last 40 bytes for footer
@@ -214,15 +241,15 @@ def main():
         Add data to the binary. The data that will be added will be:
         1. CRC32 (4 bytes)
         2. Version (Major, Minor, Patch) (4 bytes)
-        3. SHA256 (32 bytes)
+        3. Signature (64 bytes)
         They will all exist in the end of the binary.
         """
         # Set version in the footer
         analyzer.add_version_to_footer(version_major, version_minor, version_patch)
         # Add CRC32 to the footer
         analyzer.add_crc_to_footer(crc32)
-        # Add SHA256 to the footer
-        analyzer.add_sha256_to_footer()
+        # Add Signature to the footer
+        analyzer.add_signature_to_footer()
 
         # Commit all the information to the binary (actually re-write the binary)
         analyzer.commit_to_file(binary_file_path)

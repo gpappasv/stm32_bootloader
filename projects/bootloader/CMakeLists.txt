@@ -45,6 +45,7 @@ message(STATUS "CMAKE_TOOLCHAIN_FILE is: ${CMAKE_TOOLCHAIN_FILE}")
 
 # --- HAL drivers ---
 include(${GIT_ROOT_DIR}/projects/bootloader/hal-drivers.cmake)
+include(${GIT_ROOT_DIR}/projects/bootloader/uECC-lib.cmake)
 
 # --- Application code ---
 # List of bootloader's source files
@@ -66,6 +67,8 @@ set(SRC_FILES
     ${GIT_ROOT_DIR}/projects/bootloader/src/drivers/mpu/mpu_driver.c
     ${GIT_ROOT_DIR}/projects/bootloader/src/com_protocol/com_protocol.c
     ${GIT_ROOT_DIR}/projects/bootloader/src/firmware_update/firmware_update.c
+    ${GIT_ROOT_DIR}/projects/bootloader/src/authentication/authentication.c
+    ${GIT_ROOT_DIR}/projects/bootloader/src/authentication/sha256.c
 )
 
 # Build the executable based on the source files
@@ -73,6 +76,7 @@ add_executable(${EXECUTABLE} ${SRC_FILES})
 
 # Link all external libraries to executable
 target_link_libraries(${EXECUTABLE} hal_drivers)
+target_link_libraries(${EXECUTABLE} uECC)
 
 # List of compiler defines, prefix with -D compiler option
 target_compile_definitions(${EXECUTABLE} PRIVATE
@@ -91,6 +95,7 @@ target_include_directories(${EXECUTABLE} PRIVATE
         ${GIT_ROOT_DIR}/projects/bootloader/src/drivers
         ${GIT_ROOT_DIR}/projects/bootloader/src/com_protocol
         ${GIT_ROOT_DIR}/projects/bootloader/src/firmware_update
+        ${GIT_ROOT_DIR}/projects/bootloader/src/authentication
         )
 
 # Compiler options
@@ -104,7 +109,7 @@ target_compile_options(${EXECUTABLE} PRIVATE
         -ffunction-sections
         -fstack-usage
         # Optimise for size
-        #-Os
+        -Os
         )
 
 get_target_property(COMPILE_OPTIONS ${EXECUTABLE} COMPILE_OPTIONS)

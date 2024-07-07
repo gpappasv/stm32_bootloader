@@ -59,10 +59,10 @@ _Min_Heap_Size = 0x200;      /* required amount of heap  */
 _Min_Stack_Size = 0x400; /* required amount of stack */
 
 /* Image header info */
-__header_size_bytes__ = 40;
+__header_size_bytes__ = 72;
 __header_crc_size_bytes__ = 4;
 __header_fw_ver_size_bytes__ = 4;
-__header_hash_size_bytes__ = 32;
+__header_hash_size_bytes__ = 64;
 
 /* Primary app info */
 __flash_app_start__ = 0x08008000;
