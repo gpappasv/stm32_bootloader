@@ -1,7 +1,8 @@
 ## Table of contents
-- [Utilizing the build script: build.sh](#utilizing-the-build-script:-build.sh)
-- [create_dfu_image.py description](#create_dfu_image.py-description)
-- [extract_public_key.py description](#extract_public_key.py_description)
+- [Utilizing the build script build.sh](#utilizing-the-build-script-build.sh)
+- [What does the script do? Script steps...](#what-does-the-script-do-script-steps)
+- [create dfu image python script description](#create-dfu-image-python-script-description)
+- [extract public key python script description](#extract-public-key-python-script-description)
 
 # Utilizing the build script: build.sh
 The build.sh script is a simple bash script that is used to build the desired application.
@@ -31,14 +32,15 @@ To achieve those extra features, the following scripts are utilized by the build
 - <repo_root>/scripts/build_tools/create_dfu_image.py
 - <repo_root>/scripts/build_tools/extract_public_key.py
 
-## build: all
+**build: all**
+
 The build.sh script supports a build.sh all functionality. When the command all is issued, the build script builds every project found under build_info.yaml, that the build_all: true applies. The **build_all** option provided in the **build_info.yaml** adds the relevant project to the build all group.
 
 ```bash
 .\build.sh all
 ```
 
-## What does the script do? Script steps...
+# What does the script do? Script steps...
 The build.sh script basically does the following:
 1) Given the project name as input, it locates the relevant CMakeLists.txt file, in our repository.
 2) A build folder is created under <repo_root>/projects/<project_name>/ (if already existis, it is being removed first).
@@ -61,7 +63,7 @@ To install in Windows:
 choco install yq
 ```
 
-# create_dfu_image.py description
+# create dfu image python script description
 This script is being used to post process a firmware binary file, to make it compatible with the bootloader firmware update requirements.
 More information for that, can be found inside the python script.
 To utilize it for a specific binary, run the following command:
@@ -73,7 +75,7 @@ python create_dfu_image.py </path/to/bin> <path/to/linker_script> <version_major
 After the execution of this script, a new binary will be created that will be ready to be flashed to the board, and be compatible with out bootloader.
 Also, a yaml file will be produced that will contain information related to the final binary. (e.g. the crc, sha256 hash, version of the binary).
 
-# extract_public_key.py description
+# extract public key python script description
 This script is being used pre-process a project firmware headerfile and rewrite it in order to add the public key information, in C-array format. The final result of that header file will be:
 ```bash
 /**
