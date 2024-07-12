@@ -313,6 +313,9 @@ fsm_auth_hdl(bl_fsm_ctx_s * const ctx)
             // If transfer failed, mark the check as failed.
             return BL_FSM_CHECK_FAIL_EVT;
         }
+#ifdef DEBUG_LOG
+        printf("Secondary image auth failed\r\n");
+#endif
 
         // If authentication failed, mark the check as failed.
         return BL_FSM_CHECK_FAIL_EVT;
@@ -339,11 +342,13 @@ fsm_auth_hdl(bl_fsm_ctx_s * const ctx)
                 return BL_FSM_CHECK_PASS_EVT;
             }
 
-            // If transfer failed, recovery failed, so raise an error.
             return BL_FSM_ERR_OR_NONE_EVT;
         }
 
         // If authentication failed, mark the check as failed.
+#ifdef DEBUG_LOG
+        printf("Secondary image auth failed\r\n");
+#endif
         return BL_FSM_ERR_OR_NONE_EVT;
     }
 #ifdef DEBUG_LOG
@@ -356,7 +361,9 @@ fsm_auth_hdl(bl_fsm_ctx_s * const ctx)
         // If auth is ok, mark the check as passed.
         return BL_FSM_CHECK_PASS_EVT;
     }
-
+#ifdef DEBUG_LOG
+    printf("Primary image auth failed\r\n");
+#endif
     // If authentication failed, mark the check as failed.
     ctx->recover_main_img = true;
     return BL_FSM_CHECK_FAIL_EVT;
