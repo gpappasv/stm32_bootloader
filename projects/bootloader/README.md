@@ -22,6 +22,9 @@ inside the relevant README.md file.
 
 At this point, under the /build folder you should be able to find the hex/elf/bin files.
 
+**IMPORTANT!**: In order to properly and easily utilize the bootloader and create a firmware binary that can be supported by it, it is best to use the **build.sh** script, as there are quite a few steps that need to be taken to make a firmware binary compatible with the bootloader.
+More information about that can be found in the relevant README, under scripts/build_tools.
+
 # Bootloader architecture
 The bootloader software architecture can be found under docs, in high level design. One important aspect of the design
 is that, changing the implementations under src/drivers to be compatible with another device, should make the porting

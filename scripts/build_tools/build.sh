@@ -33,7 +33,7 @@ build_project() {
 
 # Function to create DFU image
 create_dfu_image() {
-    local script_dir="$GIT_ROOT/scripts/firmware_update_tools"
+    local script_dir="$GIT_ROOT/scripts/build_tools"
     if [ ! -d "$script_dir" ]; then
         echo "Folder '$script_dir' does not exist."
         return 1
