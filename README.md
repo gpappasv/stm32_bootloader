@@ -7,6 +7,7 @@ The current implementation focuses on the STM32F401RE board.
 ## Table of contents
 - [Bootloader features](#bootloader-features)
 - [Configuration](#configuration)
+- [Porting bootloader to other boards](#porting-bootloader-to-other-boards)
 - [Examples](#examples)
 - [How to use](#how-to-use)
 - [Repository structure](#repository-structure)
@@ -23,14 +24,74 @@ The current implementation focuses on the STM32F401RE board.
 
 NOTE: More in-depth documentation about how the bootloader works can be found under **docs**.
 
-# Configuration
-TODO.
+# Configuration (make your application compatible with the bootloader)
+- Adapt the bootloader:
+The bootloader needs to have some information about the following:
+- The bootloader needs to know where the primary application is to be found (the flash starting address).
+- The bootloader needs to know where the primary application ends (and based on that also determine its size).
+- The bootloader needs to know where the secondary application is to be found (the flash starting address).
+- The bootloader needs to know where the secondary application ends (and based on that also determine its size).
+
+This information is provided to the bootloader, through the linker script file (e.g. STM32F401RETx_FLASH.ld, found under projects/bootloader/boards/stm32f401re).
+In order to configure the bootloader to your own needs, you will need to open that file and modify the relevant linker script code:
+
+```bash
+/* --- BOOTLOADER CONFIGURATION SPECIFIC INFORMATION START --- */
+__header_size_bytes__ = 72;
+__header_crc_size_bytes__ = 4;
+__header_fw_ver_size_bytes__ = 4;
+__header_hash_size_bytes__ = 64;
+
+__flash_app_start__ = 0x08008000;
+__flash_app_end__ = 0x0803FFFF;
+__header_app_start__ = __flash_app_end__ - __header_size_bytes__ + 1;
+__header_app_end__ = __flash_app_end__;
+__header_app_crc_start__ = __header_app_start__;
+__header_app_fw_version_start__ = __header_app_start__ + __header_crc_size_bytes__;
+__header_app_hash_start__ = __header_app_start__ + __header_crc_size_bytes__ + __header_fw_ver_size_bytes__;
+
+__flash_app_secondary_start__ = 0x08040000;
+__flash_app_secondary_end__ = 0x08077FFF;
+__header_app_secondary_start__ = __flash_app_secondary_end__ - __header_size_bytes__ + 1;
+__header_app_secondary_end__ = __flash_app_secondary_end__;
+__header_app_secondary_crc_start__ = __header_app_secondary_start__;
+__header_app_secondary_fw_version_start__ = __header_app_secondary_start__ + __header_crc_size_bytes__;
+__header_app_secondary_hash_start__ = __header_app_secondary_start__ + __header_crc_size_bytes__ + __header_fw_ver_size_bytes__;
+
+/* Specify the memory areas */
+MEMORY
+{
+RAM (xrw)      : ORIGIN = 0x20000000, LENGTH = 96K
+FLASH (rx)      : ORIGIN = 0x8000000, LENGTH = 32K /* 32K of flash is reserved for the bootloader */
+}
+/* --- BOOTLOADER CONFIGURATION SPECIFIC INFORMATION END --- */
+```
+
+- Adapt your application:
+Similarly to the bootloader, the application must also have that information inside its linker script.
+It is important to not mess it up and be careful while copy-pasting that information to your linker script, as the tools that are provided under scripts/build_tools parse the application linker to find the relevant information. More information on how to use those tools can be found in the relevant README.md files.
+
+- You also need to modify the **private_key.pem** and **public_key.pem**, under **projects/**. They are being used to sign the application, and provide the bootloader with the relevant information on authenticating the signature.
+
+# Porting bootloader to other boards
+Porting a project that someone else has built to your own board, is never an easy task. There has been a good effort to
+design the project in a way to be as easily portable as possible. Still there are a lot of improvements that need to happen
+in that area, but you could start by reading the **README.md**, under **projects/bootloader**. There, you can find some useful notes
+that can help you port the project faster to your board.
+
+**You can always reach out to me, to guide you through it.**
+
+TODO: In the future, projects/bootloader/boards/<board_name> will contain all the **driver level** code for each specific board, and a simple define will utilize the correct board subfolder to build the bootloader.
 
 # Examples
 TODO.
 
 # How to use
-TODO.
+1. Modify the bootloader (linker script/drivers) as you like based on the information provided before.
+2. Use the build.sh script to build the bootloader.bin.
+3. Flash the bootloader.bin on flash address 0x08000000.
+4. You can develop your application following the example of projects/app. In that case, modify the linker script accordingly, update the private-public key pair and use the build.sh script to build the application.
+5. You can always have a binary yourself and utilize the underlying tools (create_dfu_image.py).
 
 # Repository structure
 The structure of the repository is as follows:
