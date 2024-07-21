@@ -58,36 +58,39 @@ _estack = 0x20018000;    /* end of RAM */
 _Min_Heap_Size = 0x200;      /* required amount of heap  */
 _Min_Stack_Size = 0x400; /* required amount of stack */
 
-/* Image header info */
-__header_size_bytes__ = 72;
-__header_crc_size_bytes__ = 4;
-__header_fw_ver_size_bytes__ = 4;
-__header_hash_size_bytes__ = 64;
+/* --- BOOTLOADER CONFIGURATION SPECIFIC INFORMATION START --- */
+/* --- Footer information section --- */
+/* Image header info */ /* TODO: GPA: header is actually footer, so we need to change the names */
+__header_size_bytes__ = 72; /* 4 bytes for CRC, 4 bytes for FW version, 64 bytes for hash: Don't change */
+__header_crc_size_bytes__ = 4; /* 4 bytes for CRC: (Don't change) */
+__header_fw_ver_size_bytes__ = 4; /* 4 bytes for FW version: (Don't change) */
+__header_hash_size_bytes__ = 64; /* 64 bytes for hash: (Don't change) */
 
-/* Primary app info */
-__flash_app_start__ = 0x08008000;
-__flash_app_end__ = 0x0803FFFF;
-__header_app_start__ = __flash_app_end__ - __header_size_bytes__ + 1;
-__header_app_end__ = __flash_app_end__;
-__header_app_crc_start__ = __header_app_start__;
-__header_app_fw_version_start__ = __header_app_start__ + __header_crc_size_bytes__;
-__header_app_hash_start__ = __header_app_start__ + __header_crc_size_bytes__ + __header_fw_ver_size_bytes__;
+/* --- Primary app information section --- */
+__flash_app_start__ = 0x08008000; /* Starting flash address of the application. Bootloader takes 14.5K of flash. With 0x08008000, the first 32K of flash is reserved for the bootloader. */
+__flash_app_end__ = 0x0803FFFF; /* Ending flash address of the application. Will determine the size of the application. */
+__header_app_start__ = __flash_app_end__ - __header_size_bytes__ + 1; /* Starting flash address of the footer. (Don't change) */ /* TODO: GPA: header is actually footer, so we need to change the names */
+__header_app_end__ = __flash_app_end__; /* Ending flash address of the footer. (Don't change) */ /* TODO: GPA: header is actually footer, so we need to change the names */
+__header_app_crc_start__ = __header_app_start__; /* Starting flash address of the CRC information in the footer. (Don't change) */
+__header_app_fw_version_start__ = __header_app_start__ + __header_crc_size_bytes__; /* Starting flash address of the FW version information in the footer. (Don't change) */ /* TODO: GPA: header is actually footer, so we need to change the names */
+__header_app_hash_start__ = __header_app_start__ + __header_crc_size_bytes__ + __header_fw_ver_size_bytes__; /* Starting flash address of the hash information in the footer. (Don't change) */ /* TODO: GPA: header is actually footer, so we need to change the names */
 
-/* Secondary app info */
-__flash_app_secondary_start__ = 0x08040000;
-__flash_app_secondary_end__ = 0x08077FFF;
-__header_app_secondary_start__ = __flash_app_secondary_end__ - __header_size_bytes__ + 1;
-__header_app_secondary_end__ = __flash_app_secondary_end__;
-__header_app_secondary_crc_start__ = __header_app_secondary_start__;
-__header_app_secondary_fw_version_start__ = __header_app_secondary_start__ + __header_crc_size_bytes__;
-__header_app_secondary_hash_start__ = __header_app_secondary_start__ + __header_crc_size_bytes__ + __header_fw_ver_size_bytes__;
+/* --- Secondary app information section --- */
+__flash_app_secondary_start__ = 0x08040000; /* Starting flash address of the secondary application. */ /* TODO: GPA: header is actually footer, so we need to change the names */
+__flash_app_secondary_end__ = 0x08077FFF; /* Ending flash address of the secondary application. Will determine the size of the secondary application. */ /* TODO: GPA: header is actually footer, so we need to change the names */
+__header_app_secondary_start__ = __flash_app_secondary_end__ - __header_size_bytes__ + 1; /* Starting flash address of the footer of the secondary application. (Don't change) */ /* TODO: GPA: header is actually footer, so we need to change the names */
+__header_app_secondary_end__ = __flash_app_secondary_end__; /* Ending flash address of the footer of the secondary application. (Don't change) */ /* TODO: GPA: header is actually footer, so we need to change the names */
+__header_app_secondary_crc_start__ = __header_app_secondary_start__; /* Starting flash address of the CRC information in the footer of the secondary application. (Don't change) */
+__header_app_secondary_fw_version_start__ = __header_app_secondary_start__ + __header_crc_size_bytes__; /* Starting flash address of the FW version information in the footer of the secondary application. (Don't change) */ /* TODO: GPA: header is actually footer, so we need to change the names */
+__header_app_secondary_hash_start__ = __header_app_secondary_start__ + __header_crc_size_bytes__ + __header_fw_ver_size_bytes__; /* Starting flash address of the hash information in the footer of the secondary application. (Don't change) */ /* TODO: GPA: header is actually footer, so we need to change the names */
 
 /* Specify the memory areas */
 MEMORY
 {
 RAM (xrw)      : ORIGIN = 0x20000000, LENGTH = 96K
-FLASH (rx)      : ORIGIN = __flash_app_start__, LENGTH = __flash_app_end__ - __flash_app_start__ + 1 - __header_size_bytes__ /* 512K */
+FLASH (rx)      : ORIGIN = __flash_app_start__, LENGTH = __flash_app_end__ - __flash_app_start__ + 1 - __header_size_bytes__ /* (Don't change) */
 }
+/* --- BOOTLOADER CONFIGURATION SPECIFIC INFORMATION END --- */
 
 /* Define output sections */
 SECTIONS
