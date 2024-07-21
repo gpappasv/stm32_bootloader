@@ -69,11 +69,24 @@ More information for that, can be found inside the python script.
 To utilize it for a specific binary, run the following command:
 
 ```bash
-python create_dfu_image.py </path/to/bin> <path/to/linker_script> <version_major> <version_minor> <patch>
+python create_dfu_image.py </path/to/bin> <path/to/linker_script> <version_major> <version_minor> <patch> <path/to/private_key>
 ```
 
 After the execution of this script, a new binary will be created that will be ready to be flashed to the board, and be compatible with out bootloader.
 Also, a yaml file will be produced that will contain information related to the final binary. (e.g. the crc, sha256 hash, version of the binary).
+
+The reason that this script needs the linker script of the bootloader is to find the following information:
+- Size of the application (both primary and secondary - which must be the same)
+- Size of the footer, to add the relevant information to the end of the binary. (Also location of the footer in flash)
+e.g. __flash_app_start__, __flash_app_end__, __header_app_crc_start__, __header_app_fw_version_start__, __header_app_hash_start__.
+
+Also the private key is used to sign the application.
+
+Note: This tool can be used on any application binary.
+E.g. Let's say you have an application (binary) of size 120kB.
+You configure the bootloader of this repository, to support an application binary of up to 230kB.
+You can easily use this script to adapt your binary based on the bootloader standards and make it compatible with it.
+Note: Don't forget to update the private-public key pair under **projects**. This is important to build your bootloader based on that pair and use the private key to sign your application. You need to create key pair based on ECDSA (chatgpt is your friend there :) )
 
 # extract public key python script description
 This script is being used pre-process a project firmware headerfile and rewrite it in order to add the public key information, in C-array format. The final result of that header file will be:
@@ -103,3 +116,5 @@ Usage:
 ```bash
 python extract_public_key.py <public_key.pem> <ecdsa_pub_key.h>
 ```
+
+Currently this is automatically being used by the build.sh script while building the bootloader.

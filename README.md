@@ -67,9 +67,16 @@ FLASH (rx)      : ORIGIN = 0x8000000, LENGTH = 32K /* 32K of flash is reserved f
 /* --- BOOTLOADER CONFIGURATION SPECIFIC INFORMATION END --- */
 ```
 
+NOTE: While configuring this part of the bootloader linker script you need to carefully consider the flash layout of your MCU.
+A good practice would be to always start the primary and secondary applications from the beginning of the desired flash page. Also you need to be careful to not have any overlaps between the two.
+Also, since the bootloader cannot update itself, once you flash the bootloader, you cannot modify the flash layout after that, on future application releases.
+
 - Adapt your application:
-Similarly to the bootloader, the application must also have that information inside its linker script.
+Similarly to the bootloader, the application should also have that information inside its linker script. This is optional though, in case that you need that information inside your application for any reason.
+
 It is important to not mess it up and be careful while copy-pasting that information to your linker script, as the tools that are provided under scripts/build_tools parse the application linker to find the relevant information. More information on how to use those tools can be found in the relevant README.md files.
+
+- Utilize the script **scripts/build_tools/create_dfu_image.py** to make your app binary compatible to the built bootloader. More info on how to use it can be found in **scripts/build_tools/README.md**. The modified binary will be exported to the current working directory.
 
 - You also need to modify the **private_key.pem** and **public_key.pem**, under **projects/**. They are being used to sign the application, and provide the bootloader with the relevant information on authenticating the signature.
 
@@ -79,7 +86,7 @@ design the project in a way to be as easily portable as possible. Still there ar
 in that area, but you could start by reading the **README.md**, under **projects/bootloader**. There, you can find some useful notes
 that can help you port the project faster to your board.
 
-**You can always reach out to me, to guide you through it.**
+**You can always reach out to me, to guide you through it. Feel free to push a commit, adding support for your board.**
 
 TODO: In the future, projects/bootloader/boards/<board_name> will contain all the **driver level** code for each specific board, and a simple define will utilize the correct board subfolder to build the bootloader.
 
@@ -88,10 +95,12 @@ TODO.
 
 # How to use
 1. Modify the bootloader (linker script/drivers) as you like based on the information provided before.
-2. Use the build.sh script to build the bootloader.bin.
+2. Use the build.sh script to build the bootloader.bin. (e.g. build.sh bootloader)
 3. Flash the bootloader.bin on flash address 0x08000000.
-4. You can develop your application following the example of projects/app. In that case, modify the linker script accordingly, update the private-public key pair and use the build.sh script to build the application.
-5. You can always have a binary yourself and utilize the underlying tools (create_dfu_image.py).
+4. You can develop your application following the example of projects/app. In that case, modify the linker script accordingly, update the private-public key pair and use the build.sh script to build the application. (e.g. build.sh all OR build.sh app)
+5. You can always have a binary yourself and utilize the underlying tools (create_dfu_image.py). With this script you can convert your binary to a compatible application to be used by the bootloader.
+
+IMPORTANT: More information about each script can be found inside the relevant folder that contains it.
 
 # Repository structure
 The structure of the repository is as follows:

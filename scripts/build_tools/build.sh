@@ -57,7 +57,7 @@ create_dfu_image() {
 
     echo "Creating DFU image..."
     pwd
-    python create_dfu_image.py "$GIT_ROOT/$binary_path" "$GIT_ROOT/$linker_script" "$version_major" "$version_minor" "$version_patch" "$GIT_ROOT/$private_key_path"
+    python create_dfu_image.py "$GIT_ROOT/$binary_path" "$GIT_ROOT/$linker_script" "$version_major" "$version_minor" "$version_patch" "$GIT_ROOT/$private_key_path" 1
     #if python fails, try with python3
     if [ $? -ne 0 ]; then
         python3 create_dfu_image.py "$GIT_ROOT/$binary_path" "$GIT_ROOT/$linker_script" "$version_major" "$version_minor" "$version_patch" "$GIT_ROOT/$private_key_path"
