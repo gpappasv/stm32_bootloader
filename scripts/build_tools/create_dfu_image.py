@@ -18,6 +18,7 @@ import sys
 import hashlib
 import os
 import yaml
+import shutil
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import ec
 from cryptography.hazmat.primitives.asymmetric.utils import Prehashed
@@ -182,7 +183,7 @@ class BinaryAnalyzer:
         print(f"\nAdding post processed signature to the footer: {signature.hex()} of len: {len(signature)} bytes")
         self.binary_data[footer_start:footer_start + SIGNATURE_SIZE_BYTES] = signature
 
-    def commit_to_file(self, file_path):
+    def commit_to_file(self, file_path, export_bin_to_cwd=False):
         """
         Commits the modified binary data to the given file path.
 
@@ -196,7 +197,12 @@ class BinaryAnalyzer:
         # Determine the filename of the binary file
         binary_filename = os.path.basename(file_path)
         # Create the full path to write the binary file inside the update folder
-        update_file_path = os.path.join(update_folder, binary_filename)
+        if export_bin_to_cwd is False:
+            update_file_path = os.path.join(update_folder, binary_filename)
+        else:
+            cwd = os.getcwd()
+            print(f"Exporting binary to current working directory: {cwd}")
+            update_file_path = os.path.join(os.getcwd(), binary_filename)
 
         # Write the binary data to the specified file path
         with open(update_file_path, "wb") as binary_file:
@@ -213,8 +219,8 @@ class BinaryAnalyzer:
             yaml.dump(yaml_info, yaml_file, default_flow_style=False)
 
 def main():
-    if len(sys.argv) != 7:
-        print(f"Usage: {sys.argv[0]} <binary_file> <linker_script> <version_major> <version_minor> <version_patch> <private_key>")
+    if len(sys.argv) not in (7, 8):
+        print(f"Usage: {sys.argv[0]} <binary_file> <linker_script> <version_major> <version_minor> <version_patch> <private_key> [export_bin_to_cwd]")
         sys.exit(1)
 
     binary_file_path = sys.argv[1]
@@ -223,6 +229,9 @@ def main():
     version_minor = int(sys.argv[4])
     version_patch = int(sys.argv[5])
     private_key = sys.argv[6]
+    export_bin_to_cwd = True if len(sys.argv) == 7 or sys.argv[7].lower() == 'True' else False
+
+    print(f"export_bin_to_cwd: {export_bin_to_cwd}")
 
     try:
         with open(binary_file_path, "rb") as binary_file:
@@ -252,7 +261,7 @@ def main():
         analyzer.add_signature_to_footer()
 
         # Commit all the information to the binary (actually re-write the binary)
-        analyzer.commit_to_file(binary_file_path)
+        analyzer.commit_to_file(binary_file_path, export_bin_to_cwd)
 
     except Exception as e:
         print(f"Error: {e}")

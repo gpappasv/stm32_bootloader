@@ -24,7 +24,7 @@ projects:
     dfu_image:
       enabled: true
       binary_path: "projects/app/build/app.bin"
-      linker_script: "projects/app/boards/stm32f401re/STM32F401RETx_FLASH.ld"
+      linker_script: "projects/bootloader/boards/stm32f401re/STM32F401RETx_FLASH.ld"
       version:
         major: 0
         minor: 1
