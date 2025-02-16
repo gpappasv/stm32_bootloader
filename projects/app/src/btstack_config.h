@@ -1,0 +1,17 @@
+#ifndef BTSTACK_CONFIG_H
+#define BTSTACK_CONFIG_H
+
+// Enable Bluetooth Low Energy (BLE)
+#define ENABLE_BLE
+
+// Set buffer sizes
+#define HCI_ACL_PAYLOAD_SIZE (251)
+#define HCI_INCOMING_PRE_BUFFER_SIZE (6)
+#define HCI_OUTGOING_PRE_BUFFER_SIZE (6)
+
+#define ENABLE_LE_PERIPHERAL
+
+#define NVM_NUM_DEVICE_DB_ENTRIES 16
+#define MAX_ATT_DB_SIZE 350
+
+#endif // BTSTACK_CONFIG_H

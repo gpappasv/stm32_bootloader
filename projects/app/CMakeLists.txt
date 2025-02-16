@@ -110,10 +110,27 @@ set(SRC_FILES
     ${GIT_ROOT_DIR}/projects/app/boards/stm32f401re/startup_stm32f401xe.s
 )
 
+file(GLOB_RECURSE BTSTACK_SOURCES 
+    ${GIT_ROOT_DIR}/third_party/btstack/src/*.c 
+)
+foreach(file ${BTSTACK_SOURCES})
+    if(${file} MATCHES ".*/(classic|le-audio|mesh)/.*")
+        list(REMOVE_ITEM BTSTACK_SOURCES ${file})
+    endif()
+endforeach()
+
+add_library(btstack ${BTSTACK_SOURCES})
+
+target_include_directories(btstack PUBLIC
+    ${GIT_ROOT_DIR}/projects/app/src
+    ${GIT_ROOT_DIR}/third_party/btstack/src
+    ${GIT_ROOT_DIR}/third_party/btstack/3rd-party/lc3-google/include
+)
+
 # Build the executable based on the source files
 add_executable(${EXECUTABLE} ${SRC_FILES})
 
-target_link_libraries(${EXECUTABLE} third_party)
+target_link_libraries(${EXECUTABLE} third_party btstack)
 
 # List of compiler defines, prefix with -D compiler option
 target_compile_definitions(${EXECUTABLE} PRIVATE
