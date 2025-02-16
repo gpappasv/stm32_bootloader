@@ -80,7 +80,7 @@ target_link_libraries(${EXECUTABLE} uECC)
 
 # List of compiler defines, prefix with -D compiler option
 target_compile_definitions(${EXECUTABLE} PRIVATE
-        #-DDEBUG_LOG
+        -DDEBUG_LOG
         )
 
 # List of include directories

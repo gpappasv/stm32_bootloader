@@ -27,7 +27,7 @@ projects:
       linker_script: "projects/bootloader/boards/stm32f401re/STM32F401RETx_FLASH.ld"
       version:
         major: 0
-        minor: 1
+        minor: 2
         patch: 0
       private_key_path: "projects/private_key.pem"
     create_public_key:
